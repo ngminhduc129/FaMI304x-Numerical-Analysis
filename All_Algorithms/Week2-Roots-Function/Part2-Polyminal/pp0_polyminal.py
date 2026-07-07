@@ -17,6 +17,11 @@
 # =============================================================================
 import numpy as np
 import pandas as pd
+import contextlib
+from pathlib import Path
+
+__dir__ = Path(__file__).parent
+
 def polynomial(coefficients, x):
     return sum(c * x**i for i, c in enumerate(coefficients))
 
@@ -40,32 +45,6 @@ def real_radius(coefficients):
     
         R = 1 + ratio**(1/(n-k)) if n!=k else 0
         return R
-# Example usage
-#coefficients = [-15, 0, 3, 0, 3, 1] # Coefficients of the polynomial -15 + 3x^2 - ax^4 + x^5
-#hệ số của fx
-coefficients = [-23, 0, 3, 1]
-temp = [x if i%2==0 else -x for i, x in enumerate(coefficients)]
-if (temp[-1] < 0):
-    revert_coefficients = [-i for i in temp]
-else:
-    revert_coefficients = temp
-
-radius = complex_radius(coefficients)
-upper_radius = real_radius(coefficients)
-lower_radius = -real_radius(revert_coefficients)
-
-print(f"Complex radius for roots: {-radius} -> {radius}")
-print(f"Function value at each end of complex radius: {polynomial(coefficients, -radius)} and {polynomial(coefficients, radius)}")
-print("\n")
-
-lower_result = polynomial(coefficients, lower_radius) if lower_radius else None
-print("Lower radius for real-value roots:", lower_radius)
-print("Function value at lower radius:", lower_result)
-print("\n")
-
-upper_result = polynomial(coefficients, upper_radius) if upper_radius else None
-print("Upper radius for real-value roots:", upper_radius)
-print("Function value at upper radius:", upper_result)
 def find_extrema(coefficients, lower_bound, upper_bound, learning_rate=0.01, max_iterations=1000, tolerance=1e-6, num_starting_points=10):
     """
     Find local minima and maxima using gradient descent/ascent with adaptive learning rate
@@ -125,22 +104,45 @@ def find_extrema(coefficients, lower_bound, upper_bound, learning_rate=0.01, max
     extrema['minima'].sort()
     extrema['maxima'].sort()
     return extrema
-# Test the function
-# Optionally, print function values at extrema
-# In case there is no radius at one end, you must provide your own bounds
-
-#To optimize, first remove the free coefficent cause it doees't affect the extrema
-temp_coefficients = coefficients.copy()
-temp_coefficients[0] = 0
-extrema = find_extrema(temp_coefficients, lower_bound = lower_radius, upper_bound = upper_radius, learning_rate = 0.5)
-
-print("Local minima:", [f"{x}" for x in extrema['minima']])
-print("Function values at minima:", [f"{polynomial(coefficients, x)}" for x in extrema['minima']])
-print("\n")
-
-print("Local maxima:", [f"{x}" for x in extrema['maxima']])
-print("Function values at maxima:", [f"{polynomial(coefficients, x)}" for x in extrema['maxima']])
-
-
-
-
+if __name__ == "__main__":
+    output_path = str(__dir__ / "pp0_polyminal_result.txt")
+    with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+        # Example usage
+        #coefficients = [-15, 0, 3, 0, 3, 1] # Coefficients of the polynomial -15 + 3x^2 - ax^4 + x^5
+        #hệ số của fx
+        coefficients = [-23, 0, 3, 1]
+        temp = [x if i%2==0 else -x for i, x in enumerate(coefficients)]
+        if (temp[-1] < 0):
+            revert_coefficients = [-i for i in temp]
+        else:
+            revert_coefficients = temp
+        
+        radius = complex_radius(coefficients)
+        upper_radius = real_radius(coefficients)
+        lower_radius = -real_radius(revert_coefficients)
+        
+        print(f"Bán kính phức cho nghiệm: {-radius} -> {radius}")
+        print(f"Giá trị hàm tại mỗi đầu của bán kính phức: {polynomial(coefficients, -radius)} và {polynomial(coefficients, radius)}")
+        print("\n")
+        
+        lower_result = polynomial(coefficients, lower_radius) if lower_radius else None
+        print("Bán kính dưới cho nghiệm thực:", lower_radius)
+        print("Giá trị hàm tại bán kính dưới:", lower_result)
+        print("\n")
+        
+        upper_result = polynomial(coefficients, upper_radius) if upper_radius else None
+        print("Bán kính trên cho nghiệm thực:", upper_radius)
+        print("Giá trị hàm tại bán kính trên:", upper_result)
+        
+        #To optimize, first remove the free coefficent cause it doees't affect the extrema
+        temp_coefficients = coefficients.copy()
+        temp_coefficients[0] = 0
+        extrema = find_extrema(temp_coefficients, lower_bound = lower_radius, upper_bound = upper_radius, learning_rate = 0.5)
+        
+        print("Cực tiểu địa phương:", [f"{x}" for x in extrema['minima']])
+        print("Giá trị hàm tại cực tiểu:", [f"{polynomial(coefficients, x)}" for x in extrema['minima']])
+        print("\n")
+        
+        print("Cực đại địa phương:", [f"{x}" for x in extrema['maxima']])
+        print("Giá trị hàm tại cực đại:", [f"{polynomial(coefficients, x)}" for x in extrema['maxima']])
+    print(f"Đã ghi kết quả vào {output_path}")

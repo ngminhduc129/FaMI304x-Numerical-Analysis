@@ -11,8 +11,12 @@
 # Input: Đọc từ file G_input_A.txt và G_input_B.txt
 # Cách dùng: python pp1_Gauss.py
 # =============================================================================
+from pathlib import Path
 from sympy import Matrix, zeros, N
 import numpy as np
+import contextlib
+
+__dir__ = Path(__file__).parent.resolve()
 
 # Hàm này được thêm vào để loại bỏ các giá trị nhỏ hơn 10⁻¹⁰, đảm bảo chúng được coi là 0.
 def chop_small_values(mat):
@@ -109,15 +113,19 @@ def gauss_solve(A, B):
     
     print(f"Số phần tử tự do là {len(missindex)}: X{[x + 1 for x in missindex]}. Nghiệm:")
     return X
-A = Matrix(np.loadtxt("G_input_A.txt"))
-print("A =")
-display(A)
-print("B =")
-B = Matrix(np.loadtxt("G_input_B.txt"))
-display(B)
-print("A|B=")
-X = gauss_solve(A,B)
-display(X)
+if __name__ == "__main__":
+    output_path = str(__dir__ / "pp1_Gauss_result.txt")
+    with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+        A = Matrix(np.loadtxt(__dir__ / "G_input_A.txt"))
+        print("A =")
+        display(A)
+        print("B =")
+        B = Matrix(np.loadtxt(__dir__ / "G_input_B.txt"))
+        display(B)
+        print("A|B=")
+        X = gauss_solve(A,B)
+        display(X)
+    print(f"Đã ghi kết quả vào {output_path}")
 
 
 

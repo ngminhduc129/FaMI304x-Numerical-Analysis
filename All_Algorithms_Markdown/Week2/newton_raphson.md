@@ -26,101 +26,114 @@ $$
 
 ## Chọn giá trị khởi đầu
 
-Nếu $f(a) \cdot f''(a) > 0$ thì $x_0 = a$; nếu $f(b) \cdot f''(b) > 0$ thì $x_0 = b$.
+**Bước 0:** Chọn $x_0$
+- Nếu $f(a) \cdot f''(a) > 0$ thì $x_0 = a$.
+- Nếu $f(b) \cdot f''(b) > 0$ thì $x_0 = b$.
 
-## Các biến thể
+---
 
-### v1 — Sai số tiên nghiệm $\Delta_x = |f(x_n)| / m_1$
+## v1 — Sai số tiên nghiệm $\Delta_x = |f(x_n)| / m_1$
 
-**Thuật toán:**
+**Mục tiêu:** Tìm nghiệm xấp xỉ của $f(x)=0$ với số bước cho trước, sai số tính theo công thức tiên nghiệm.
+**Đầu vào:** Hàm $f(x)$, đạo hàm $f'(x)$, khoảng $[a, b]$ chứa nghiệm, số bước $n$, số chữ số làm tròn $rbl$, $m_1 = \min|f'(x)|$ và $M_2 = \max|f''(x)|$ trên $[a, b]$.
+**Đầu ra:** Nghiệm $x$ xấp xỉ.
 
-**Đầu vào:** Hàm $f(x)$, đạo hàm $f'(x)$, khoảng $[a, b]$ chứa nghiệm, số bước $n$, số chữ số làm tròn $rbl$,
-$m_1 = \min|f'(x)|$ và $M_2 = \max|f''(x)|$ trên $[a, b]$.
-**Đầu ra:** Nghiệm $x$ xấp xỉ của $f(x) = 0$.
+**Bước 1:** Chọn giá trị khởi đầu $x_0$
+- Tính $f(a)$ và $f''(a)$.
+- Nếu $f(a) \cdot f''(a) > 0$: gán $x = a$.
+- Nếu $f(b) \cdot f''(b) > 0$: gán $x = b$.
 
-1. Chọn giá trị khởi đầu $x_0$:
-   - Tính $f(a)$ và $f''(a)$.
-   - Nếu $f(a) \cdot f''(a) > 0$: gán $x = a$.
-   - Nếu $f(b) \cdot f''(b) > 0$: gán $x = b$.
+**Bước 2:** Lặp với $i = 0, 1, \dots, n-1$
 
-2. Với mỗi bước $i$ từ $0$ đến $n-1$:
-   a. Tính giá trị tiếp theo: $x_{\text{new}} = x - \dfrac{f(x)}{f'(x)}$.
-   b. Tính sai số tiên nghiệm: $\Delta_x = \dfrac{|f(x_{\text{new}})|}{m_1}$.
-   c. Lưu kết quả bước $i$ vào bảng $(x, f(x), f'(x), x_{\text{new}}, f(x_{\text{new}}), \Delta_x)$.
-   d. Gán $x = x_{\text{new}}$.
-   e. Nếu $f(x_{\text{new}}) = 0$: thoát vòng lặp.
+   **Bước 2.1:** Tính giá trị tiếp theo:
+   $$x_{\text{new}} = x - \dfrac{f(x)}{f'(x)}$$
+   
+   **Bước 2.2:** Tính sai số tiên nghiệm: $\Delta_x = \dfrac{|f(x_{\text{new}})|}{m_1}$.
+   
+   **Bước 2.3:** Lưu kết quả bước $i$ vào bảng $(x, f(x), f'(x), x_{\text{new}}, f(x_{\text{new}}), \Delta_x)$.
+   
+   **Bước 2.4:** Gán $x = x_{\text{new}}$.
+   
+   **Bước 2.5:** Nếu $f(x_{\text{new}}) = 0$: thoát vòng lặp.
 
-3. In bảng kết quả.
+**Bước 3:** In bảng kết quả.
 
-4. Làm tròn:
-   - Nếu $rbl = \text{None}$: in $x$.
-   - Nếu $rbl$ có giá trị: in $\text{round}(x, rbl)$.
+**Bước 4:** Làm tròn và xuất kết quả
+- Nếu $rbl = \text{None}$: in $x$.
+- Nếu $rbl$ có giá trị: in $\text{round}(x, rbl)$.
 
-### v2 — Sai số hậu nghiệm $\Delta_x = \dfrac{M_2}{2 m_1} (x_{n+1} - x_n)^2$
+---
 
-**Thuật toán:**
+## v2 — Sai số hậu nghiệm $\Delta_x = \dfrac{M_2}{2 m_1} (x_{n+1} - x_n)^2$
 
-**Đầu vào:** Hàm $f(x)$, đạo hàm $f'(x)$ và $f''(x)$, khoảng $[a, b]$ chứa nghiệm, số bước $n$, số chữ số làm tròn $rbl$,
-$m_1 = \min|f'(x)|$ và $M_2 = \max|f''(x)|$ trên $[a, b]$.
-**Đầu ra:** Nghiệm $x$ xấp xỉ của $f(x) = 0$.
+**Mục tiêu:** Tìm nghiệm xấp xỉ với sai số hậu nghiệm.
+**Đầu vào:** Hàm $f(x)$, đạo hàm $f'(x)$ và $f''(x)$, khoảng $[a, b]$ chứa nghiệm, số bước $n$, số chữ số làm tròn $rbl$, $m_1 = \min|f'(x)|$ và $M_2 = \max|f''(x)|$ trên $[a, b]$.
+**Đầu ra:** Nghiệm $x$ xấp xỉ.
 
-1. Chọn giá trị khởi đầu $x_0$:
-   - Nếu $f(a) \cdot f''(a) > 0$: gán $x = a$.
-   - Nếu $f(b) \cdot f''(b) > 0$: gán $x = b$.
+**Bước 1:** Chọn giá trị khởi đầu $x_0$
+- Nếu $f(a) \cdot f''(a) > 0$: gán $x = a$.
+- Nếu $f(b) \cdot f''(b) > 0$: gán $x = b$.
 
-2. Với mỗi bước $i$ từ $0$ đến $n-1$:
-   a. Tính giá trị tiếp theo: $x_{\text{new}} = x - \dfrac{f(x)}{f'(x)}$.
-   b. Tính sai số hậu nghiệm: $\Delta_x = \dfrac{M_2}{2 \cdot m_1} \cdot (x_{\text{new}} - x)^2$.
-   c. Lưu kết quả bước $i$ vào bảng $(x, f(x), f'(x), x_{\text{new}}, f(x_{\text{new}}), \Delta_x)$.
-   d. Gán $x = x_{\text{new}}$.
-   e. Nếu $f(x_{\text{new}}) = 0$: thoát vòng lặp.
+**Bước 2:** Lặp với $i = 0, 1, \dots, n-1$
 
-3. In bảng kết quả.
+   **Bước 2.1:** Tính giá trị tiếp theo:
+   $$x_{\text{new}} = x - \dfrac{f(x)}{f'(x)}$$
+   
+   **Bước 2.2:** Tính sai số hậu nghiệm:
+   $$\Delta_x = \dfrac{M_2}{2 \cdot m_1} \cdot (x_{\text{new}} - x)^2$$
+   
+   **Bước 2.3:** Lưu kết quả bước $i$ vào bảng.
+   
+   **Bước 2.4:** Gán $x = x_{\text{new}}$.
+   
+   **Bước 2.5:** Nếu $f(x_{\text{new}}) = 0$: thoát vòng lặp.
 
-4. Làm tròn:
-   - Nếu $rbl = \text{None}$: in $x$.
-   - Nếu $rbl$ có giá trị: in $\text{round}(x, rbl)$.
+**Bước 3:** In bảng kết quả.
 
-### v3 — Dừng theo sai số tuyệt đối
+**Bước 4:** Làm tròn và xuất kết quả.
 
-**Thuật toán (dùng công thức v1 — $\Delta_x = |f(x_n)| / m_1$):**
+---
 
-**Đầu vào:** Hàm $f(x)$, đạo hàm $f'(x)$, khoảng $[a, b]$, ngưỡng $\varepsilon > 0$,
-$m_1 = \min|f'(x)|$ trên $[a, b]$.
-**Đầu ra:** Nghiệm $x$ xấp xỉ của $f(x) = 0$.
+## v3 — Dừng theo sai số tuyệt đối
 
-1. Chọn $x_0$ dựa vào dấu $f \cdot f''$.
-2. Lặp:
-   a. $x_{\text{new}} = x - f(x) / f'(x)$.
-   b. Nếu $|f(x_{\text{new}})| < m_1 \cdot \varepsilon$: thoát vòng lặp.
-   c. Gán $x = x_{\text{new}}$.
-3. In $\text{round}(x, rbl)$.
+### Cách 1: Dùng công thức v1 ($\Delta_x = |f(x_n)| / m_1$)
 
-**Thuật toán (dùng công thức v2 — $\Delta_x = \dfrac{M_2}{2 m_1} (x_{n+1} - x_n)^2$):**
+**Mục tiêu:** Tìm nghiệm với độ chính xác tuyệt đối $\varepsilon$.
+**Đầu vào:** Hàm $f(x)$, đạo hàm $f'(x)$, khoảng $[a, b]$, ngưỡng $\varepsilon > 0$, $m_1 = \min|f'(x)|$ trên $[a, b]$.
+**Đầu ra:** Nghiệm $x$ xấp xỉ.
 
-**Đầu vào:** Hàm $f(x)$, đạo hàm $f'(x)$ và $f''(x)$, khoảng $[a, b]$, ngưỡng $\varepsilon > 0$,
-$m_1 = \min|f'(x)|$, $M_2 = \max|f''(x)|$ trên $[a, b]$.
-**Đầu ra:** Nghiệm $x$ xấp xỉ của $f(x) = 0$.
+**Bước 1:** Chọn $x_0$ dựa vào dấu $f \cdot f''$.
+**Bước 2:** Lặp
+   - **Bước 2.1:** $x_{\text{new}} = x - f(x) / f'(x)$.
+   - **Bước 2.2:** Nếu $|f(x_{\text{new}})| < m_1 \cdot \varepsilon$: thoát vòng lặp.
+   - **Bước 2.3:** Gán $x = x_{\text{new}}$.
+**Bước 3:** In $\text{round}(x, rbl)$.
 
-1. Chọn $x_0$ dựa vào dấu $f \cdot f''$.
-2. Lặp:
-   a. $x_{\text{new}} = x - f(x) / f'(x)$.
-   b. Nếu $|x_{\text{new}} - x| < \sqrt{\dfrac{2 \cdot m_1 \cdot \varepsilon}{M_2}}$: thoát vòng lặp.
-   c. Gán $x = x_{\text{new}}$.
-3. In $\text{round}(x, rbl)$.
+### Cách 2: Dùng công thức v2 ($\Delta_x = \dfrac{M_2}{2 m_1} (x_{n+1} - x_n)^2$)
 
-### v4 — Dừng theo sai số tương đối
+**Mục tiêu:** Tìm nghiệm với độ chính xác tuyệt đối $\varepsilon$.
+**Đầu vào:** Hàm $f(x)$, đạo hàm $f'(x)$ và $f''(x)$, khoảng $[a, b]$, ngưỡng $\varepsilon > 0$, $m_1 = \min|f'(x)|$, $M_2 = \max|f''(x)|$ trên $[a, b]$.
+**Đầu ra:** Nghiệm $x$ xấp xỉ.
 
-**Thuật toán:**
+**Bước 1:** Chọn $x_0$ dựa vào dấu $f \cdot f''$.
+**Bước 2:** Lặp
+   - **Bước 2.1:** $x_{\text{new}} = x - f(x) / f'(x)$.
+   - **Bước 2.2:** Nếu $|x_{\text{new}} - x| < \sqrt{\dfrac{2 \cdot m_1 \cdot \varepsilon}{M_2}}$: thoát vòng lặp.
+   - **Bước 2.3:** Gán $x = x_{\text{new}}$.
+**Bước 3:** In $\text{round}(x, rbl)$.
 
-**Đầu vào:** Hàm $f(x)$, đạo hàm $f'(x)$ và $f''(x)$, khoảng $[a, b]$, ngưỡng $\eta > 0$,
-$m_1 = \min|f'(x)|$, $M_2 = \max|f''(x)|$ trên $[a, b]$.
-**Đầu ra:** Nghiệm $x$ xấp xỉ của $f(x) = 0$.
+---
 
-1. Chọn $x_0$ dựa vào dấu $f \cdot f''$.
-2. Lặp:
-   a. $x_{\text{new}} = x - f(x) / f'(x)$.
-   b. Tính sai số tương đối: $\sigma_x = \dfrac{(x_{\text{new}} - x)^2}{|x_{\text{new}}|}$.
-   c. Nếu $\sigma_x < \dfrac{2 \cdot \eta \cdot m_1}{M_2}$: thoát vòng lặp.
-   d. Gán $x = x_{\text{new}}$.
-3. In $\text{round}(x, rbl)$.
+## v4 — Dừng theo sai số tương đối
+
+**Mục tiêu:** Tìm nghiệm với độ chính xác tương đối $\eta$.
+**Đầu vào:** Hàm $f(x)$, đạo hàm $f'(x)$ và $f''(x)$, khoảng $[a, b]$, ngưỡng $\eta > 0$, $m_1 = \min|f'(x)|$, $M_2 = \max|f''(x)|$ trên $[a, b]$.
+**Đầu ra:** Nghiệm $x$ xấp xỉ.
+
+**Bước 1:** Chọn $x_0$ dựa vào dấu $f \cdot f''$.
+**Bước 2:** Lặp
+   - **Bước 2.1:** $x_{\text{new}} = x - f(x) / f'(x)$.
+   - **Bước 2.2:** Tính sai số tương đối: $\sigma_x = \dfrac{(x_{\text{new}} - x)^2}{|x_{\text{new}}|}$.
+   - **Bước 2.3:** Nếu $\sigma_x < \dfrac{2 \cdot \eta \cdot m_1}{M_2}$: thoát vòng lặp.
+   - **Bước 2.4:** Gán $x = x_{\text{new}}$.
+**Bước 3:** In $\text{round}(x, rbl)$.

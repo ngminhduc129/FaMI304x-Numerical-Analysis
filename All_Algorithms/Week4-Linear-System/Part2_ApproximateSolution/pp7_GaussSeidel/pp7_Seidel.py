@@ -11,10 +11,14 @@
 # Input: Đọc từ GS_input_A1.txt, GS_input_B1.txt
 # Cách dùng: python pp7_Seidel.py
 # =============================================================================
+from pathlib import Path
 from fractions import Fraction
 from typing import Tuple, Union
 import numpy as np
 import pandas as pd
+import contextlib
+
+__dir__ = Path(__file__).parent.resolve()
 
 pd.set_option('display.precision', 12)  # Increase decimal precision
 pd.set_option('display.width', 300)     # Wider display
@@ -150,7 +154,7 @@ def fixed_point_gauss_seidel(
 
     # Tolerance
     tol = (eps if eps is not None else eta) * (1 - q) * (1 - s) / q
-    print(f"q: {q:.12f}, s: {s:.12f}, threshold: {tol:.12f}")
+    print(f"q: {q:.12f}, s: {s:.12f}, ngưỡng: {tol:.12f}")
 
     # Initialize
     x_old = np.array(x0, dtype=float)
@@ -178,42 +182,46 @@ def fixed_point_gauss_seidel(
     # Prepare DataFrame
     cols = [f"x{i+1}" for i in range(n)]
     df = pd.DataFrame(history, columns=cols)
-    df["error"] = errors
-    df.index.name = "Iteration"
+    df["sai_số"] = errors
+    df.index.name = "Lần lặp"
     return df
-#Original matrix Ax=B
-A = input_matrix('GS_input_A1.txt', convert_fractions=False)
-B = input_matrix('GS_input_B1.txt', convert_fractions=False) #remove flatten if B is multi-column matrix
+if __name__ == "__main__":
+    output_path = str(__dir__ / "pp7_Seidel_result.txt")
+    with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+        #Original matrix Ax=B
+        A = input_matrix('GS_input_A1.txt', convert_fractions=False)
+        B = input_matrix('GS_input_B1.txt', convert_fractions=False) #remove flatten if B is multi-column matrix
 
-print("\nMatrix A:"); output_matrix(A)
-print("\nCheck dominace of A:", check_dominance(A));
-print("\nMatrix B:"); output_matrix(B)
-#Convert to recursion form x_new = Cx+D
-C, D = convert_to_iteration(A, B)
+        print("\nMa trận A:"); output_matrix(A)
+        print("\nKiểm tra chéo trội của A:", check_dominance(A));
+        print("\nMa trận B:"); output_matrix(B)
+        #Convert to recursion form x_new = Cx+D
+        C, D = convert_to_iteration(A, B)
 
-print("\nMatrix C:"); output_matrix(C)
-print("\nMatrix D:"); output_matrix(D)
-C = input_matrix('GS_input_A1.txt', convert_fractions=False)
-D = input_matrix('GS_input_B1.txt', convert_fractions=False) #remove flatten if B is multi-column matrix
+        print("\nMa trận C:"); output_matrix(C)
+        print("\nMa trận D:"); output_matrix(D)
+        C = input_matrix(str(__dir__ / 'GS_input_A1.txt'), convert_fractions=False)
+        D = input_matrix(str(__dir__ / 'GS_input_B1.txt'), convert_fractions=False) #remove flatten if B is multi-column matrix
 
-print("\nMatrix C:"); output_matrix(C);
-print("\nCheck dominace of C:", check_dominance(C));
-print("\nMatrix D:"); output_matrix(D);
-#Calculate the result
-x0 = np.array([0,0,0,0,0]) #initial value
-domiType = check_dominance(C)
-eps = 1e-10
-eta = None
+        print("\nMa trận C:"); output_matrix(C);
+        print("\nKiểm tra chéo trội của C:", check_dominance(C));
+        print("\nMa trận D:"); output_matrix(D);
+        #Calculate the result
+        x0 = np.array([0,0,0,0,0]) #initial value
+        domiType = check_dominance(C)
+        eps = 1e-10
+        eta = None
 
-print("\nMatrix C:"); output_matrix(C);
-print("\nCheck dominace of C:", check_dominance(C));
-print("\nMatrix D:"); output_matrix(D);
-df_history = fixed_point_gauss_seidel(C, D, x0, domiType, eps, eta)
-print(df_history.to_string(float_format="{: .4f}".format))
+        print("\nMa trận C:"); output_matrix(C);
+        print("\nKiểm tra chéo trội của C:", check_dominance(C));
+        print("\nMa trận D:"); output_matrix(D);
+        df_history = fixed_point_gauss_seidel(C, D, x0, domiType, eps, eta)
+        print(df_history.to_string(float_format="{: .4f}".format))
 
-solution_series = df_history.filter(regex=r'^x\d+$').iloc[-1]
-print("Approximate solution:"),
-print(solution_series.to_string())
+        solution_series = df_history.filter(regex=r'^x\d+$').iloc[-1]
+        print("Nghiệm xấp xỉ:"),
+        print(solution_series.to_string())
+    print(f"Đã ghi kết quả vào {output_path}")
 def convert_to_iteration_2(A: np.ndarray, 
                            B: np.ndarray, 
                           ) -> Tuple[np.ndarray, np.ndarray]:
@@ -281,7 +289,7 @@ def fixed_point_gauss_seidel_2(
 
     #Tolerance
     tol = (eps if eps is not None else eta) * (1 - q) * (1 - s) / q
-    print(f"q: {q:.12f}, s: {s:.12f}, threshold: {tol:.12f}")
+    print(f"q: {q:.12f}, s: {s:.12f}, ngưỡng: {tol:.12f}")
 
     # Initial y
     T_inv = np.diag(1.0 / np.diag(T))
@@ -312,35 +320,39 @@ def fixed_point_gauss_seidel_2(
             
     # Prepare DataFrame
     df = pd.DataFrame(history, columns=[f"y{i+1}" for i in range(n)] + [f"x{i+1}" for i in range(n)])
-    df['error'] = errors
-    df.index.name = 'Iteration'
+    df['sai_số'] = errors
+    df.index.name = 'Lần lặp'
     return df
 
-#Original matrix Ax=B
-A = input_matrix('GS_input_A1.txt', convert_fractions=False)
-B = input_matrix('GS_input_B1.txt', convert_fractions=False) #remove flatten if B is multi-column matrix
+if __name__ == "__main__":
+    output_path = str(__dir__ / "pp7_Seidel_result.txt")
+    with open(output_path, "a", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+        #Original matrix Ax=B
+        A = input_matrix(str(__dir__ / 'GS_input_A1.txt'), convert_fractions=False)
+        B = input_matrix(str(__dir__ / 'GS_input_B1.txt'), convert_fractions=False) #remove flatten if B is multi-column matrix
 
-print("\nMatrix A:"); output_matrix(A)
-print("\nCheck dominace of A:", check_dominance(A));
-print("\nMatrix B:"); output_matrix(B)
-#Convert to recursion form x_new = Cx+D
-T, C, D = convert_to_iteration_2(A, B)
+        print("\nMa trận A:"); output_matrix(A)
+        print("\nKiểm tra chéo trội của A:", check_dominance(A));
+        print("\nMa trận B:"); output_matrix(B)
+        #Convert to recursion form x_new = Cx+D
+        T, C, D = convert_to_iteration_2(A, B)
 
-print("\nMatrix C:"); output_matrix(C)
-print("\nMatrix D:"); output_matrix(D)
-print("\nMatrix T:"); output_matrix(T)
-#Calculate the result
-domiType = check_dominance(A)
-x0 = [1,1,1,1,1,1,1] #initial value
-eps = 1e-6
-eta = None
+        print("\nMa trận C:"); output_matrix(C)
+        print("\nMa trận D:"); output_matrix(D)
+        print("\nMa trận T:"); output_matrix(T)
+        #Calculate the result
+        domiType = check_dominance(A)
+        x0 = [1,1,1,1,1,1,1] #initial value
+        eps = 1e-6
+        eta = None
 
-df_history = fixed_point_gauss_seidel_2(T, C, D, x0, domiType, eps, eta)
-print(df_history)
+        df_history = fixed_point_gauss_seidel_2(T, C, D, x0, domiType, eps, eta)
+        print(df_history)
 
-solution_series = df_history.filter(regex=r'^x\d+$').iloc[-1]
-print("Approximate solution:"),
-print(solution_series.to_string())
+        solution_series = df_history.filter(regex=r'^x\d+$').iloc[-1]
+        print("Nghiệm xấp xỉ:"),
+        print(solution_series.to_string())
+    print(f"Đã ghi kết quả vào {output_path}")
 
 
 

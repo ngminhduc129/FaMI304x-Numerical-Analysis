@@ -1,0 +1,6 @@
+Ma trận đọc từ file:
+ 2.0 1.0 3.0 -5.0
+ 0.0 0.0 0.0  1.0
+-2.0 2.0 1.0  6.0
+ 3.0 0.0 0.0  2.0
+Lỗi: Ma trận phải đối xứng để phân rã Cholesky

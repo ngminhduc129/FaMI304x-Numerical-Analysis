@@ -11,8 +11,12 @@
 # Input: Đọc từ file GJ_input_A.txt và GJ_input_B.txt
 # Cách dùng: python pp2_GaussJordan.py
 # =============================================================================
+from pathlib import Path
 from sympy import Matrix, zeros, N
 import numpy as np
+import contextlib
+
+__dir__ = Path(__file__).parent.resolve()
 
 #Hàm này được thêm vào để loại bỏ các giá trị nhỏ hơn 10⁻¹⁰, đảm bảo chúng được coi là 0.
 def chop_small_values(mat):
@@ -149,14 +153,18 @@ def print_detailed_solutions(AB_sorted, colused, n_vars):
         print(f"{X[i]} = {solutions[X[i]]}")
         
     return solutions
-A = Matrix(np.loadtxt("GJ_input_A.txt"))
-print("A =")
-display(A)
-print("B =")
-B = Matrix(np.loadtxt("GJ_input_B.txt"))
-display(B)
-print("A|B=")
-gauss_jordan_solve(A,B)
+if __name__ == "__main__":
+    output_path = str(__dir__ / "pp2_GaussJordan_result.txt")
+    with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+        A = Matrix(np.loadtxt(__dir__ / "GJ_input_A.txt"))
+        print("A =")
+        display(A)
+        print("B =")
+        B = Matrix(np.loadtxt(__dir__ / "GJ_input_B.txt"))
+        display(B)
+        print("A|B=")
+        gauss_jordan_solve(A,B)
+    print(f"Đã ghi kết quả vào {output_path}")
 
 
 

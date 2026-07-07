@@ -14,9 +14,14 @@
 import numpy as np
 import pandas as pd
 
-pd.set_option('display.precision', 15)  # Increase decimal precision
+pd.set_option('display.precision', 7)  # Độ chính xác hiển thị
 pd.set_option('display.width', 150)     # Wider display
 pd.set_option('display.max_columns', None)  # Show all column
+import contextlib
+from pathlib import Path
+
+__dir__ = Path(__file__).parent
+
 def newton_iteration_v1 (f, df, d2f, a, b, n, rbl):	
 	M2 = max([np.abs(d2f(x)) for x in [a, b]]) #M2 is the maximum value of |f''(x)| in the interval [a,b]
 	m1 = min([np.abs(df(x)) for x in [a, b]]) #m1 is the minimum value of |f'(x)| in the interval [a,b]
@@ -60,22 +65,12 @@ def newton_iteration_v1 (f, df, d2f, a, b, n, rbl):
 	print(df_results.to_string(index=False))
 
 	if rbl == None:
-		print(f"The value of root is: {x}")
+		print(f"Giá trị nghiệm là: {x}")
 	else:
 		total_delta = delta_x + 0.5 * 10**(-rbl)
-		print(f"The value of root with {rbl} decimal point is: {round(x, rbl)}")
-		print(f"Relative error is: {total_delta}")
-f = lambda x: x**4-27
-df = lambda x: 4*x**3
-d2f = lambda x: 12*x**2
+		print(f"Giá trị nghiệm với {rbl} chữ số thập phân là: {round(x, rbl)}")
+		print(f"Sai số tương đối là: {total_delta}")
 
-a = 2
-b = 3
-
-n = 5
-rbl = 9
-
-newton_iteration_v1 (f, df, d2f, a, b, n, rbl);
 def newton_iteration_v2 (f, df, d2f, a, b, n, rbl):	
 	M2 = max([np.abs(d2f(x)) for x in [a, b]]) #M2 is the maximum value of |f''(x)| in the interval [a,b]
 	m1 = min([np.abs(df(x)) for x in [a, b]]) #m1 is the minimum value of |f'(x)| in the interval [a,b]
@@ -119,22 +114,12 @@ def newton_iteration_v2 (f, df, d2f, a, b, n, rbl):
 	print(df_results.to_string(index=False))
 
 	if rbl == None:
-		print(f"The value of root is: {x}")
+		print(f"Giá trị nghiệm là: {x}")
 	else:
 		total_delta = delta_x + 0.5 * 10**(-rbl)
-		print(f"The value of root with {rbl} decimal point is: {round(x, rbl)}")
-		print(f"Relative error is: {total_delta}")
-f = lambda x: x**4-27
-df = lambda x: 4*x**3
-d2f = lambda x: 12*x**2
+		print(f"Giá trị nghiệm với {rbl} chữ số thập phân là: {round(x, rbl)}")
+		print(f"Sai số tương đối là: {total_delta}")
 
-a = 2
-b = 3
-
-n = 5
-rbl = 9
-
-newton_iteration_v2 (f, df, d2f, a, b, n, rbl);
 def newton_recursion_absolute_v1 (f, df, d2f, a, b, eps):	
 	M2 = max([np.abs(d2f(x)) for x in [a, b]]) #M2 is the maximum value of |f''(x)| in the interval [a,b]
 	m1 = min([np.abs(df(x)) for x in [a, b]]) #m1 is the minimum value of |f'(x)| in the interval [a,b]
@@ -187,17 +172,8 @@ def newton_recursion_absolute_v1 (f, df, d2f, a, b, eps):
 	print(df_results.to_string(index=False))
 
 
-	print(f"The value of root with absolute error {eps} is: {x}")
-f = lambda x: x**5 - np.log(x) - 12
-df = lambda x: 5*x**4 - 1/x
-d2f = lambda x: 20*x**3 + 1/x**2
+	print(f"Giá trị nghiệm với sai số tuyệt đối {eps} là: {x}")
 
-a = 1
-b = 2
-
-eps = 10**(-8)
-
-newton_recursion_absolute_v1 (f, df, d2f, a, b, eps);
 def newton_recursion_absolute_v2 (f, df, d2f, a, b, eps):	
 	M2 = max([np.abs(d2f(x)) for x in [a, b]]) #M2 is the maximum value of |f''(x)| in the interval [a,b]
 	m1 = min([np.abs(df(x)) for x in [a, b]]) #m1 is the minimum value of |f'(x)| in the interval [a,b]
@@ -250,17 +226,8 @@ def newton_recursion_absolute_v2 (f, df, d2f, a, b, eps):
 	print(df_results.to_string(index=False))
 
 
-	print(f"The value of root with absolute error {eps} is: {x}")
-f = lambda x: x**4-27
-df = lambda x: 4*x**3
-d2f = lambda x: 12*x**2
+	print(f"Giá trị nghiệm với sai số tuyệt đối {eps} là: {x}")
 
-a = 2
-b = 3
-
-eps = 0.5 * 10**(-7)
-
-newton_recursion_absolute_v2 (f, df, d2f, a, b, eps);
 def newton_recursion_relative (f, df, d2f, a, b, eta):	
 	M2 = max([np.abs(d2f(x)) for x in [a, b]]) #M2 is the maximum value of |f''(x)| in the interval [a,b]
 	m1 = min([np.abs(df(x)) for x in [a, b]]) #m1 is the minimum value of |f'(x)| in the interval [a,b]
@@ -313,18 +280,65 @@ def newton_recursion_relative (f, df, d2f, a, b, eta):
 	print(df_results.to_string(index=False))
 
 
-	print(f"The value of root with relative error {eta} is: {x}")
-f = lambda x: x**4-27
-df = lambda x: 4*x**3
-d2f = lambda x: 12*x**2
+	print(f"Giá trị nghiệm với sai số tương đối {eta} là: {x}")
 
-a = 2
-b = 3
+if __name__ == "__main__":
+    output_path = str(__dir__ / "pp3_newton_raphson_result.txt")
+    with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+        f = lambda x: x**4-27
+        df = lambda x: 4*x**3
+        d2f = lambda x: 12*x**2
 
-eta = 0.5 * 10**(-7)
+        a = 2
+        b = 3
 
-newton_recursion_relative (f, df, d2f, a, b, eta);
+        n = 5
+        rbl = 9
 
+        newton_iteration_v1 (f, df, d2f, a, b, n, rbl);
 
+        f = lambda x: x**4-27
+        df = lambda x: 4*x**3
+        d2f = lambda x: 12*x**2
 
+        a = 2
+        b = 3
 
+        n = 5
+        rbl = 9
+
+        newton_iteration_v2 (f, df, d2f, a, b, n, rbl);
+
+        f = lambda x: x**5 - np.log(x) - 12
+        df = lambda x: 5*x**4 - 1/x
+        d2f = lambda x: 20*x**3 + 1/x**2
+
+        a = 1
+        b = 2
+
+        eps = 10**(-8)
+
+        newton_recursion_absolute_v1 (f, df, d2f, a, b, eps);
+
+        f = lambda x: x**4-27
+        df = lambda x: 4*x**3
+        d2f = lambda x: 12*x**2
+
+        a = 2
+        b = 3
+
+        eps = 0.5 * 10**(-7)
+
+        newton_recursion_absolute_v2 (f, df, d2f, a, b, eps);
+
+        f = lambda x: x**4-27
+        df = lambda x: 4*x**3
+        d2f = lambda x: 12*x**2
+
+        a = 2
+        b = 3
+
+        eta = 0.5 * 10**(-7)
+
+        newton_recursion_relative (f, df, d2f, a, b, eta);
+    print(f"Đã ghi kết quả vào {output_path}")

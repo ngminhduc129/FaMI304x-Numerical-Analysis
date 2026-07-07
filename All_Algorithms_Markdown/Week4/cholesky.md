@@ -36,104 +36,78 @@ $$y_i = \frac{b_i - \sum_{j=0}^{i-1} L_{i,j} \cdot y_j}{L_{i,i}}$$
 
 $$x_i = \frac{y_i - \sum_{j=i+1}^{n-1} L_{j,i} \cdot x_j}{L_{i,i}}$$
 
+---
+
 ## Thuật toán
 
-**Đầu vào:** Ma trận $A_{n \times n}$ đọc từ file `CLSK_input_A.txt`, vector $b_{n \times 1}$ đọc từ file đầu vào.  
+**Mục tiêu:** Phân rã Cholesky ma trận $A$ và giải hệ $Ax = b$.
+**Đầu vào:** Ma trận $A_{n \times n}$ đọc từ file `CLSK_input_A.txt`, vector $b_{n \times 1}$ đọc từ file đầu vào.
 **Đầu ra:** Ma trận $L$ (phân rã Cholesky) và vector nghiệm $x$ của hệ $Ax = b$.
 
 ### Phần A: Kiểm tra điều kiện đầu vào
 
-1. **Đọc dữ liệu đầu vào:**
-   a. Mở file `CLSK_input_A.txt`, đọc ma trận $A$.
-   b. Xác định kích thước $n$ của $A$. Kiểm tra $n > 0$.
-   c. Đọc vector $b$ có $n$ phần tử.
+**Bước 1:** Đọc dữ liệu đầu vào
+   - **Bước 1.1:** Mở file `CLSK_input_A.txt`, đọc ma trận $A$.
+   - **Bước 1.2:** Xác định kích thước $n$ của $A$. Kiểm tra $n > 0$.
+   - **Bước 1.3:** Đọc vector $b$ có $n$ phần tử.
 
-2. **Kiểm tra ma trận đối xứng:**
-   a. Với mỗi $i$ từ $0$ đến $n-1$:
-      - Với mỗi $j$ từ $0$ đến $n-1$:
-        * Tính sai số $\delta = |A[i][j] - A[j][i]|$.
-        * Nếu $\delta > 10^{-10}$:
-          - Kết luận ma trận $A$ không đối xứng.
-          - Thông báo lỗi và kết thúc thuật toán.
-   b. Nếu tất cả sai số đều nhỏ hơn $10^{-10}$, kết luận $A$ là ma trận đối xứng.
+**Bước 2:** Kiểm tra ma trận đối xứng
+   - **Bước 2.1:** Với mỗi $i$ từ $0$ đến $n-1$:
+     * Với mỗi $j$ từ $0$ đến $n-1$:
+       - Tính $\delta = |A[i][j] - A[j][i]|$.
+       - Nếu $\delta > 10^{-10}$: kết luận $A$ không đối xứng, thông báo lỗi và kết thúc.
 
 ### Phần B: Phân rã Cholesky
 
-3. **Khởi tạo ma trận $L$:**
-   a. Tạo ma trận $L$ kích thước $n \times n$, khởi tạo tất cả phần tử bằng $0$.
+**Bước 3:** Khởi tạo ma trận $L$
+   - **Bước 3.1:** Tạo ma trận $L$ kích thước $n \times n$, khởi tạo tất cả bằng $0$.
 
-4. **Với mỗi $i$ từ $0$ đến $n-1$ (xử lý từng hàng của $L$):**
-   a. **Với mỗi $j$ từ $0$ đến $i$ (xử lý từng cột từ trái sang phải trong hàng $i$):**
+**Bước 4:** Với mỗi $i$ từ $0$ đến $n-1$ (xử lý từng hàng của $L$)
 
-      b. **Trường hợp $i == j$ (phần tử đường chéo):**
-         - Khởi tạo tổng $sum = 0$.
-         - Với mỗi $k$ từ $0$ đến $i-1$:
-           $$sum = sum + L[i][k] \times L[i][k]$$
-         - Tính $L[i][i] = \sqrt{A[i][i] - sum}$.
-         - **Kiểm tra:** nếu $A[i][i] - sum < 0$:
-           * Kết luận ma trận $A$ không xác định dương.
-           * Thông báo lỗi và kết thúc thuật toán.
+   **Bước 4.1:** Với mỗi $j$ từ $0$ đến $i$ (xử lý từng cột trong hàng $i$)
 
-      c. **Trường hợp $i > j$ (phần tử ngoài đường chéo):**
-         - Khởi tạo tổng $sum = 0$.
-         - Với mỗi $k$ từ $0$ đến $j-1$:
-           $$sum = sum + L[i][k] \times L[j][k]$$
-         - Kiểm tra $|L[j][j]| < 10^{-10}$:
-           * Nếu đúng, thông báo lỗi (chia cho 0) và kết thúc.
-         - Tính $L[i][j] = (A[i][j] - sum) / L[j][j]$.
+   **Bước 4.2:** Trường hợp $i == j$ (phần tử đường chéo)
+   - Khởi tạo $sum = 0$.
+   - Với mỗi $k$ từ $0$ đến $i-1$: $sum = sum + L[i][k] \times L[i][k]$.
+   - Tính $L[i][i] = \sqrt{A[i][i] - sum}$.
+   - **Kiểm tra:** nếu $A[i][i] - sum < 0$: kết luận $A$ không xác định dương, kết thúc.
+
+   **Bước 4.3:** Trường hợp $i > j$ (phần tử ngoài đường chéo)
+   - Khởi tạo $sum = 0$.
+   - Với mỗi $k$ từ $0$ đến $j-1$: $sum = sum + L[i][k] \times L[j][k]$.
+   - Kiểm tra $|L[j][j]| < 10^{-10}$: nếu đúng, báo lỗi chia cho 0 và kết thúc.
+   - Tính $L[i][j] = (A[i][j] - sum) / L[j][j]$.
 
 ### Phần C: Kiểm tra kết quả phân rã
 
-5. **Kiểm tra phân rã Cholesky:**
-   a. Tạo ma trận $A\_reconstructed$ kích thước $n \times n$, khởi tạo bằng $0$.
-   b. Với mỗi $i$ từ $0$ đến $n-1$:
-      - Với mỗi $j$ từ $0$ đến $n-1$:
-        * Khởi tạo tổng $sum = 0$.
-        * Với mỗi $k$ từ $0$ đến $n-1$:
-          $$sum = sum + L[i][k] \times L[j][k]$$
-        * Gán $A\_reconstructed[i][j] = sum$.
-   c. So sánh $A\_reconstructed$ với $A$ gốc:
-      - Nếu $|A\_reconstructed[i][j] - A[i][j]| > 10^{-10}$ với bất kỳ $(i, j)$ nào:
-        * In cảnh báo sai số tại vị trí đó.
-      - Nếu tất cả sai số đều nhỏ hơn $10^{-10}$, thông báo phân rã Cholesky thành công.
+**Bước 5:** Kiểm tra phân rã Cholesky
+   - **Bước 5.1:** Tạo $A\_reconstructed$ kích thước $n \times n$, khởi tạo bằng $0$.
+   - **Bước 5.2:** Với mỗi $i$, $j$ từ $0$ đến $n-1$:
+     * $sum = 0$.
+     * Với mỗi $k$ từ $0$ đến $n-1$: $sum = sum + L[i][k] \times L[j][k]$.
+     * Gán $A\_reconstructed[i][j] = sum$.
+   - **Bước 5.3:** So sánh $A\_reconstructed$ với $A$ gốc:
+     * Nếu $|A\_reconstructed[i][j] - A[i][j]| > 10^{-10}$ với bất kỳ $(i, j)$ nào: in cảnh báo.
+     * Nếu tất cả sai số đều nhỏ hơn $10^{-10}$, thông báo thành công.
 
 ### Phần D: Giải hệ phương trình $Ax = b$
 
-6. **Giải hệ $Ly = b$ bằng phương pháp thế tiến:**
-   a. Tạo vector $y$ kích thước $n$, khởi tạo bằng $0$.
-   b. Với mỗi $i$ từ $0$ đến $n-1$:
-      - Khởi tạo tổng $sum = b[i]$.
-      - Với mỗi $j$ từ $0$ đến $i-1$:
-        $$sum = sum - L[i][j] \times y[j]$$
-      - Kiểm tra $|L[i][i]| < 10^{-10}$:
-        * Nếu đúng, thông báo lỗi (ma trận suy biến) và kết thúc.
-      - Tính $y[i] = sum / L[i][i]$.
+**Bước 6:** Giải hệ $Ly = b$ bằng thế tiến
+   - **Bước 6.1:** Tạo vector $y$ kích thước $n$, khởi tạo bằng $0$.
+   - **Bước 6.2:** Với mỗi $i$ từ $0$ đến $n-1$:
+     * $sum = b[i]$.
+     * Với mỗi $j$ từ $0$ đến $i-1$: $sum = sum - L[i][j] \times y[j]$.
+     * Kiểm tra $|L[i][i]| < 10^{-10}$: nếu đúng, báo lỗi.
+     * $y[i] = sum / L[i][i]$.
 
-7. **Giải hệ $L^T x = y$ bằng phương pháp thế lùi:**
-   a. Tạo vector $x$ kích thước $n$, khởi tạo bằng $0$.
-   b. Với mỗi $i$ từ $n-1$ xuống $0$:
-      - Khởi tạo tổng $sum = y[i]$.
-      - Với mỗi $j$ từ $i+1$ đến $n-1$:
-        $$sum = sum - L[j][i] \times x[j]$$
-      - Kiểm tra $|L[i][i]| < 10^{-10}$:
-        * Nếu đúng, thông báo lỗi và kết thúc.
-      - Tính $x[i] = sum / L[i][i]$.
+**Bước 7:** Giải hệ $L^T x = y$ bằng thế lùi
+   - **Bước 7.1:** Tạo vector $x$ kích thước $n$, khởi tạo bằng $0$.
+   - **Bước 7.2:** Với mỗi $i$ từ $n-1$ xuống $0$:
+     * $sum = y[i]$.
+     * Với mỗi $j$ từ $i+1$ đến $n-1$: $sum = sum - L[j][i] \times x[j]$.
+     * Kiểm tra $|L[i][i]| < 10^{-10}$: nếu đúng, báo lỗi.
+     * $x[i] = sum / L[i][i]$.
 
-### Phần E: Kiểm tra nghiệm
-
-8. **Kiểm tra nghiệm $x$:**
-   a. Tính $Ax$:
-      - Với mỗi $i$ từ $0$ đến $n-1$:
-        * Khởi tạo $sum = 0$.
-        * Với mỗi $j$ từ $0$ đến $n-1$:
-          $$sum = sum + A[i][j] \times x[j]$$
-        * So sánh $sum$ với $b[i]$:
-          - Nếu $|sum - b[i]| > 10^{-10}$: in cảnh báo sai số.
-   b. Nếu tất cả sai số đều nhỏ hơn $10^{-10}$, thông báo nghiệm chính xác.
-
-### Phần F: Hoàn tất
-
-9. **Trả về kết quả:**
-   a. Trả về ma trận $L$ (tam giác dưới từ phân rã Cholesky).
-   b. Trả về vector nghiệm $x$ của hệ $Ax = b$.
-   c. Ghi kết quả ra file hoặc in ra màn hình theo yêu cầu.
+**Bước 8:** Trả về kết quả
+   - Trả về ma trận $L$ và vector nghiệm $x$.
+   - Ghi kết quả ra file hoặc in màn hình.

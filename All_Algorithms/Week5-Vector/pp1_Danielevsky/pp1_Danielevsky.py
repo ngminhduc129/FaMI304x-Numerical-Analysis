@@ -10,8 +10,13 @@
 # Input: Đọc từ file DVSK_input_A.txt
 # Cách dùng: python pp1_Danielevsky.py
 # =============================================================================
+from pathlib import Path
+import contextlib
 import numpy as np
+import pandas as pd
 from typing import Tuple, List
+
+__dir__ = Path(__file__).parent.resolve()
 np.set_printoptions(linewidth=np.inf)
 def danilevsky_method(A: np.ndarray, tol: float = 1e-10) -> Tuple[np.ndarray, List[np.ndarray]]:
     """
@@ -39,7 +44,7 @@ def danilevsky_method(A: np.ndarray, tol: float = 1e-10) -> Tuple[np.ndarray, Li
     for k in range(n-1, 0, -1):
         print(f"\nBước k = {k}:")
         print("Ma trận hiện tại:")
-        print(P)
+        print(pd.DataFrame(P).to_string(index=False, header=False))
         
         # Kiểm tra các trường hợp
         if abs(P[k,k-1]) >= tol:  # TH1: a_{n,n-1} ≠ 0
@@ -49,8 +54,8 @@ def danilevsky_method(A: np.ndarray, tol: float = 1e-10) -> Tuple[np.ndarray, Li
             S[k-1] = -P[k] / P[k,k-1]
             S[k-1,k-1] = 1/P[k,k-1]
             
-            print("\nMa trận biến đổi S:")
-            print(S)
+            print("Ma trận biến đổi S:")
+            print(pd.DataFrame(S).to_string(index=False, header=False))
             
             # Lưu ma trận biến đổi
             S_list.append(S)
@@ -58,8 +63,8 @@ def danilevsky_method(A: np.ndarray, tol: float = 1e-10) -> Tuple[np.ndarray, Li
             # Cập nhật ma trận P
             P = np.linalg.inv(S) @ P @ S
             
-            print("\nMa trận sau biến đổi:")
-            print(P)
+            print("Ma trận sau biến đổi:")
+            print(pd.DataFrame(P).to_string(index=False, header=False))
             
         else:  # TH2 hoặc TH3
             # Tìm phần tử khác 0 đầu tiên trong hàng k
@@ -78,14 +83,14 @@ def danilevsky_method(A: np.ndarray, tol: float = 1e-10) -> Tuple[np.ndarray, Li
                 C[k-1,non_zero_idx] = 1
                 C[non_zero_idx,k-1] = 1
                 
-                print(f"\nMa trận hoán vị C tại bước k={k}:")
-                print(C)
-                print(f"\nHoán vị hàng {k} và {non_zero_idx+1}")
+                print(f"Ma trận hoán vị C tại bước k={k}:")
+                print(pd.DataFrame(C).to_string(index=False, header=False))
+                print(f"Hoán vị hàng {k} và {non_zero_idx+1}")
                 
                 # Hoán vị hàng và cột
                 P = C @ P @ C
-                print("\nMa trận sau khi hoán vị:")
-                print(P)
+                print("Ma trận sau khi hoán vị:")
+                print(pd.DataFrame(P).to_string(index=False, header=False))
                 
                 S_list.append(C)
                 i = k % (n-1) + 1
@@ -94,22 +99,22 @@ def danilevsky_method(A: np.ndarray, tol: float = 1e-10) -> Tuple[np.ndarray, Li
                 S[k-1] = -P[k] / P[k,k-1]
                 S[k-1,k-1] = 1/P[k,k-1]
                 
-                print(f"\nMa trận nghịch đảo của M_{i}:")
-                print(S)
+                print(f"Ma trận nghịch đảo của M_{i}:")
+                print(pd.DataFrame(S).to_string(index=False, header=False))
                 
                 S_list.append(S)
                 P = np.linalg.inv(S) @ P @ S
                 
-                print("\nMa trận sau biến đổi:")
-                print(P)
+                print("Ma trận sau biến đổi:")
+                print(pd.DataFrame(P).to_string(index=False, header=False))
                 
             else:  # TH3: Tất cả phần tử đều bằng 0
                 print(f"\nTH3: a_{k},j = 0 với mọi j ≤ {k-1}")
                 print("Ma trận đã ở dạng Frobenius, không cần biến đổi")
                 continue
     
-    print("\nMa trận Frobenius cuối cùng:")
-    print(P)
+    print("Ma trận Frobenius cuối cùng:")
+    print(pd.DataFrame(P).to_string(index=False, header=False))
     
     # Lấy các hệ số của đa thức đặc trưng từ ma trận Frobenius
     coeffs = [1] + [-P[0,i] for i in range(n)]
@@ -188,36 +193,38 @@ def read_matrix_from_file(filename: str) -> np.ndarray:
         print(f"Lỗi khi đọc file: {str(e)}")
         return None
 
-# Ví dụ đọc ma trận từ file
-
-try:
-    # Đọc ma trận từ file
-    A_file = read_matrix_from_file("DVSK_input_A.txt")
-    if A_file is not None:
-        print("Ma trận đọc từ file:")
-        print(A_file)
-        
-        # Tìm trị riêng và vectơ riêng
-        eigenvalues_file, eigenvectors_file = danilevsky_method(A_file)
-        
-        print("\nTrị riêng:")
-        for i, lambda_i in enumerate(eigenvalues_file):
-            if abs(lambda_i.imag) < 1e-15:
-                print(f"lambda_{i+1} = {lambda_i.real:.15f}")
-            else:
-                print(f"lambda_{i+1} = {lambda_i.real:.15f} + {lambda_i.imag:.15f}j")
+if __name__ == "__main__":
+    output_path = str(__dir__ / "pp1_Danielevsky_result.txt")
+    with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+        try:
+            # Đọc ma trận từ file
+            A_file = read_matrix_from_file(str(__dir__ / "DVSK_input_A.txt"))
+            if A_file is not None:
+                print("Ma trận đọc từ file:")
+                print(pd.DataFrame(A_file).to_string(index=False, header=False))
                 
-        print("\nVectơ riêng:")
-        for i, v in enumerate(eigenvectors_file):
-            print(f"v_{i+1} = [")
-            for j in range(len(v)):
-                if abs(v[j].imag) < 1e-15:
-                    print(f"    {v[j].real:.15f}")
-                else:
-                    print(f"    {v[j].real:.15f} + {v[j].imag:.15f}j")
-            print("]")
-except Exception as e:
-    print(f"Lỗi khi xử lý ma trận: {str(e)}")
+                # Tìm trị riêng và vectơ riêng
+                eigenvalues_file, eigenvectors_file = danilevsky_method(A_file)
+                
+                print("\nTrị riêng:")
+                for i, lambda_i in enumerate(eigenvalues_file):
+                    if abs(lambda_i.imag) < 1e-15:
+                        print(f"lambda_{i+1} = {lambda_i.real:.15f}")
+                    else:
+                        print(f"lambda_{i+1} = {lambda_i.real:.15f} + {lambda_i.imag:.15f}j")
+                        
+                print("\nVectơ riêng:")
+                for i, v in enumerate(eigenvectors_file):
+                    print(f"v_{i+1} = [")
+                    for j in range(len(v)):
+                        if abs(v[j].imag) < 1e-15:
+                            print(f"    {v[j].real:.15f}")
+                        else:
+                            print(f"    {v[j].real:.15f} + {v[j].imag:.15f}j")
+                    print("]")
+        except Exception as e:
+            print(f"Lỗi khi xử lý ma trận: {str(e)}")
+    print(f"Đã ghi kết quả vào {output_path}")
 
 
 

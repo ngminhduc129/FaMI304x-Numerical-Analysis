@@ -24,125 +24,134 @@ $$
 \Delta_x = \frac{M_1 - m_1}{m_1} |x_{n+1} - x_n|
 $$
 
-## Các biến thể
+---
 
-### v1 — Sai số tiên nghiệm $\Delta_x = |f(x_n)| / m_1$
+## v1 — Sai số tiên nghiệm $\Delta_x = |f(x_n)| / m_1$
 
-**Thuật toán:**
+**Mục tiêu:** Tìm nghiệm xấp xỉ của $f(x)=0$ bằng phương pháp dây cung với số bước cho trước.
+**Đầu vào:** Hàm $f(x)$, khoảng $[a, b]$ với $f(a) \cdot f(b) < 0$, số bước $n$, số chữ số làm tròn $rbl$, $m_1 = \min|f'(x)|$ và $M_1 = \max|f'(x)|$ trên $[a, b]$.
+**Đầu ra:** Nghiệm $x$ xấp xỉ.
 
-**Đầu vào:** Hàm $f(x)$, khoảng $[a, b]$ với $f(a) \cdot f(b) < 0$, số bước $n$, số chữ số làm tròn $rbl$,
-$m_1 = \min|f'(x)|$ và $M_1 = \max|f'(x)|$ trên $[a, b]$.
-**Đầu ra:** Nghiệm $x$ xấp xỉ của $f(x) = 0$.
+**Bước 1:** Kiểm tra điều kiện đầu vào
+- Tính $f(a)$ và $f(b)$.
+- Nếu $f(a) \cdot f(b) \geq 0$: dừng, thông báo "Bạn chưa chọn đúng $a$ và $b$".
+- Nếu $M_1 \cdot m_1 \leq 0$: dừng (đạo hàm đổi dấu hoặc bằng $0$).
 
-1. Kiểm tra điều kiện đầu vào:
-   - Tính $f(a)$ và $f(b)$.
-   - Nếu $f(a) \cdot f(b) \geq 0$: dừng, thông báo "Bạn chưa chọn đúng $a$ và $b$".
-   - Nếu $M_1 \cdot m_1 \leq 0$: dừng (đạo hàm đổi dấu hoặc bằng $0$).
+**Bước 2:** Khởi tạo
+- Gán $x = a$.
+- Gán $\text{mrk} = b$.
+- Gán $\text{sign}_a = 1$ nếu $f(a) > 0$, $-1$ nếu $f(a) < 0$.
 
-2. Khởi tạo:
-   - Gán $x = a$.
-   - Gán $\text{mrk} = b$.
-   - Gán $\text{sign}_a = 1$ nếu $f(a) > 0$, $-1$ nếu $f(a) < 0$.
+**Bước 3:** Lặp với $i = 0, 1, \dots, n-1$
 
-3. Với mỗi bước $i$ từ $0$ đến $n-1$:
-   a. Tính điểm cắt dây cung:
-      - $x_{\text{new}} = \dfrac{\text{mrk} \cdot f(x) - x \cdot f(\text{mrk})}{f(x) - f(\text{mrk})}$.
-   b. Tính sai số tiên nghiệm: $\Delta_x = \dfrac{|f(x_{\text{new}})|}{m_1}$.
-   c. Nếu $i = 0$: xác định cặp điểm ban đầu.
-      - Nếu $f(a) \cdot f(x_{\text{new}}) < 0$: gán $\text{mrk} = x$ (nghiệm giữa $a$ và $x_{\text{new}}$).
-      - Nếu $f(a) \cdot f(x_{\text{new}}) > 0$: giữ nguyên $\text{mrk} = b$ (nghiệm giữa $x_{\text{new}}$ và $b$).
-   d. Lưu kết quả bước $i$ vào bảng $(x, \text{mrk}, x_{\text{new}}, f(x), f(\text{mrk}), f(x_{\text{new}}), \Delta_x)$.
-   e. Gán $x = x_{\text{new}}$.
-   f. Nếu $f(x_{\text{new}}) = 0$: thoát vòng lặp.
+   **Bước 3.1:** Tính điểm cắt dây cung:
+   $$x_{\text{new}} = \dfrac{\text{mrk} \cdot f(x) - x \cdot f(\text{mrk})}{f(x) - f(\text{mrk})}$$
+   
+   **Bước 3.2:** Tính sai số tiên nghiệm: $\Delta_x = \dfrac{|f(x_{\text{new}})|}{m_1}$.
+   
+   **Bước 3.3:** Nếu $i = 0$: xác định cặp điểm ban đầu
+   - Nếu $f(a) \cdot f(x_{\text{new}}) < 0$: gán $\text{mrk} = x$ (nghiệm giữa $a$ và $x_{\text{new}}$).
+   - Nếu $f(a) \cdot f(x_{\text{new}}) > 0$: giữ nguyên $\text{mrk} = b$ (nghiệm giữa $x_{\text{new}}$ và $b$).
+   
+   **Bước 3.4:** Lưu kết quả bước $i$ vào bảng $(x, \text{mrk}, x_{\text{new}}, f(x), f(\text{mrk}), f(x_{\text{new}}), \Delta_x)$.
+   
+   **Bước 3.5:** Gán $x = x_{\text{new}}$.
+   
+   **Bước 3.6:** Nếu $f(x_{\text{new}}) = 0$: thoát vòng lặp.
 
-4. In bảng kết quả.
+**Bước 4:** In bảng kết quả.
 
-5. Làm tròn:
-   - Nếu $rbl = \text{None}$: in $x$.
-   - Nếu $rbl$ có giá trị: in $\text{round}(x, rbl)$.
+**Bước 5:** Làm tròn và xuất kết quả
+- Nếu $rbl = \text{None}$: in $x$.
+- Nếu $rbl$ có giá trị: in $\text{round}(x, rbl)$.
 
-### v2 — Sai số hậu nghiệm $\Delta_x = \dfrac{M_1 - m_1}{m_1} |x_{n+1} - x_n|$
+---
 
-**Thuật toán:**
+## v2 — Sai số hậu nghiệm $\Delta_x = \dfrac{M_1 - m_1}{m_1} |x_{n+1} - x_n|$
 
-**Đầu vào:** Hàm $f(x)$, khoảng $[a, b]$ với $f(a) \cdot f(b) < 0$, số bước $n$, số chữ số làm tròn $rbl$,
-$m_1 = \min|f'(x)|$ và $M_1 = \max|f'(x)|$ trên $[a, b]$.
-**Đầu ra:** Nghiệm $x$ xấp xỉ của $f(x) = 0$.
+**Mục tiêu:** Tìm nghiệm xấp xỉ với sai số hậu nghiệm.
+**Đầu vào:** Hàm $f(x)$, khoảng $[a, b]$ với $f(a) \cdot f(b) < 0$, số bước $n$, số chữ số làm tròn $rbl$, $m_1 = \min|f'(x)|$ và $M_1 = \max|f'(x)|$ trên $[a, b]$.
+**Đầu ra:** Nghiệm $x$ xấp xỉ.
 
-1. Kiểm tra điều kiện đầu vào:
-   - Tính $f(a)$ và $f(b)$.
-   - Nếu $f(a) \cdot f(b) \geq 0$: dừng, thông báo "Bạn chưa chọn đúng $a$ và $b$".
-   - Nếu $M_1 \cdot m_1 \leq 0$: dừng.
+**Bước 1:** Kiểm tra điều kiện đầu vào
+- Tính $f(a)$ và $f(b)$.
+- Nếu $f(a) \cdot f(b) \geq 0$: dừng.
+- Nếu $M_1 \cdot m_1 \leq 0$: dừng.
 
-2. Khởi tạo:
-   - Gán $x = a$.
-   - Gán $\text{mrk} = b$.
-   - Gán $\text{sign}_a = 1$ nếu $f(a) > 0$, $-1$ nếu $f(a) < 0$.
+**Bước 2:** Khởi tạo
+- Gán $x = a$, $\text{mrk} = b$.
+- Gán $\text{sign}_a = 1$ nếu $f(a) > 0$, $-1$ nếu $f(a) < 0$.
 
-3. Với mỗi bước $i$ từ $0$ đến $n-1$:
-   a. Tính điểm cắt dây cung:
-      - $x_{\text{new}} = \dfrac{\text{mrk} \cdot f(x) - x \cdot f(\text{mrk})}{f(x) - f(\text{mrk})}$.
-   b. Tính sai số hậu nghiệm: $\Delta_x = \dfrac{M_1 - m_1}{m_1} \cdot |x_{\text{new}} - x|$.
-   c. Nếu $i = 0$: xác định cặp điểm ban đầu.
-      - Nếu $f(a) \cdot f(x_{\text{new}}) < 0$: gán $\text{mrk} = x$.
-      - Nếu $f(a) \cdot f(x_{\text{new}}) > 0$: giữ nguyên $\text{mrk} = b$.
-   d. Lưu kết quả bước $i$ vào bảng $(x, \text{mrk}, x_{\text{new}}, f(x), f(\text{mrk}), f(x_{\text{new}}), \Delta_x)$.
-   e. Gán $x = x_{\text{new}}$.
-   f. Nếu $f(x_{\text{new}}) = 0$: thoát vòng lặp.
+**Bước 3:** Lặp với $i = 0, 1, \dots, n-1$
 
-4. In bảng kết quả.
+   **Bước 3.1:** Tính điểm cắt dây cung:
+   $$x_{\text{new}} = \dfrac{\text{mrk} \cdot f(x) - x \cdot f(\text{mrk})}{f(x) - f(\text{mrk})}$$
+   
+   **Bước 3.2:** Tính sai số hậu nghiệm: $\Delta_x = \dfrac{M_1 - m_1}{m_1} \cdot |x_{\text{new}} - x|$.
+   
+   **Bước 3.3:** Nếu $i = 0$: xác định cặp điểm ban đầu
+   - Nếu $f(a) \cdot f(x_{\text{new}}) < 0$: gán $\text{mrk} = x$.
+   - Nếu $f(a) \cdot f(x_{\text{new}}) > 0$: giữ nguyên $\text{mrk} = b$.
+   
+   **Bước 3.4:** Lưu kết quả bước $i$ vào bảng.
+   
+   **Bước 3.5:** Gán $x = x_{\text{new}}$.
+   
+   **Bước 3.6:** Nếu $f(x_{\text{new}}) = 0$: thoát vòng lặp.
 
-5. Làm tròn:
-   - Nếu $rbl = \text{None}$: in $x$.
-   - Nếu $rbl$ có giá trị: in $\text{round}(x, rbl)$.
+**Bước 4:** In bảng kết quả.
 
-### v3 — Dừng theo sai số tuyệt đối
+**Bước 5:** Làm tròn và xuất kết quả.
 
-**Thuật toán (dùng công thức v1 — $\Delta_x = |f(x_n)| / m_1$):**
+---
 
-**Đầu vào:** Hàm $f(x)$, khoảng $[a, b]$ với $f(a) \cdot f(b) < 0$, ngưỡng $\varepsilon > 0$,
-$m_1 = \min|f'(x)|$ trên $[a, b]$.
-**Đầu ra:** Nghiệm $x$ xấp xỉ của $f(x) = 0$.
+## v3 — Dừng theo sai số tuyệt đối
 
-1. Kiểm tra $f(a) \cdot f(b) < 0$ và $m_1 > 0$.
-2. Gán $x = a$, $\text{mrk} = b$.
-3. Lặp:
-   a. Tính $x_{\text{new}} = \dfrac{\text{mrk} \cdot f(x) - x \cdot f(\text{mrk})}{f(x) - f(\text{mrk})}$.
-   b. Nếu $|f(x_{\text{new}})| < m_1 \cdot \varepsilon$: thoát vòng lặp.
-   c. Nếu $i = 0$: cập nhật $\text{mrk}$ theo dấu $f(a) \cdot f(x_{\text{new}})$.
-   d. Gán $x = x_{\text{new}}$.
-4. In kết quả $\text{round}(x, rbl)$.
+### Cách 1: Dùng công thức v1 ($\Delta_x = |f(x_n)| / m_1$)
 
-**Thuật toán (dùng công thức v2 — $\Delta_x = \dfrac{M_1 - m_1}{m_1} |x_{n+1} - x_n|$):**
+**Mục tiêu:** Tìm nghiệm với độ chính xác tuyệt đối $\varepsilon$.
+**Đầu vào:** Hàm $f(x)$, khoảng $[a, b]$ với $f(a) \cdot f(b) < 0$, ngưỡng $\varepsilon > 0$, $m_1 = \min|f'(x)|$ trên $[a, b]$.
+**Đầu ra:** Nghiệm $x$ xấp xỉ.
 
-**Đầu vào:** Hàm $f(x)$, khoảng $[a, b]$ với $f(a) \cdot f(b) < 0$, ngưỡng $\varepsilon > 0$,
-$m_1 = \min|f'(x)|$, $M_1 = \max|f'(x)|$ trên $[a, b]$.
-**Đầu ra:** Nghiệm $x$ xấp xỉ của $f(x) = 0$.
+**Bước 1:** Kiểm tra $f(a) \cdot f(b) < 0$ và $m_1 > 0$.
+**Bước 2:** Gán $x = a$, $\text{mrk} = b$.
+**Bước 3:** Lặp
+   - **Bước 3.1:** Tính $x_{\text{new}} = \dfrac{\text{mrk} \cdot f(x) - x \cdot f(\text{mrk})}{f(x) - f(\text{mrk})}$.
+   - **Bước 3.2:** Nếu $|f(x_{\text{new}})| < m_1 \cdot \varepsilon$: thoát vòng lặp.
+   - **Bước 3.3:** Nếu $i = 0$: cập nhật $\text{mrk}$ theo dấu $f(a) \cdot f(x_{\text{new}})$.
+   - **Bước 3.4:** Gán $x = x_{\text{new}}$.
+**Bước 4:** In kết quả $\text{round}(x, rbl)$.
 
-1. Kiểm tra $f(a) \cdot f(b) < 0$, $M_1 \cdot m_1 > 0$.
-2. Gán $x = a$, $\text{mrk} = b$.
-3. Lặp:
-   a. Tính $x_{\text{new}} = \dfrac{\text{mrk} \cdot f(x) - x \cdot f(\text{mrk})}{f(x) - f(\text{mrk})}$.
-   b. Tính $\Delta_x = \dfrac{M_1 - m_1}{m_1} \cdot |x_{\text{new}} - x|$.
-   c. Nếu $\Delta_x < \varepsilon$: thoát vòng lặp.
-   d. Nếu $i = 0$: cập nhật $\text{mrk}$ theo dấu $f(a) \cdot f(x_{\text{new}})$.
-   e. Gán $x = x_{\text{new}}$.
-4. In kết quả $\text{round}(x, rbl)$.
+### Cách 2: Dùng công thức v2 ($\Delta_x = \dfrac{M_1 - m_1}{m_1} |x_{n+1} - x_n|$)
 
-### v4 — Dừng theo sai số tương đối
+**Mục tiêu:** Tìm nghiệm với độ chính xác tuyệt đối $\varepsilon$.
+**Đầu vào:** Hàm $f(x)$, khoảng $[a, b]$ với $f(a) \cdot f(b) < 0$, ngưỡng $\varepsilon > 0$, $m_1 = \min|f'(x)|$, $M_1 = \max|f'(x)|$ trên $[a, b]$.
+**Đầu ra:** Nghiệm $x$ xấp xỉ.
 
-**Thuật toán:**
+**Bước 1:** Kiểm tra $f(a) \cdot f(b) < 0$, $M_1 \cdot m_1 > 0$.
+**Bước 2:** Gán $x = a$, $\text{mrk} = b$.
+**Bước 3:** Lặp
+   - **Bước 3.1:** Tính $x_{\text{new}} = \dfrac{\text{mrk} \cdot f(x) - x \cdot f(\text{mrk})}{f(x) - f(\text{mrk})}$.
+   - **Bước 3.2:** Tính $\Delta_x = \dfrac{M_1 - m_1}{m_1} \cdot |x_{\text{new}} - x|$.
+   - **Bước 3.3:** Nếu $\Delta_x < \varepsilon$: thoát vòng lặp.
+   - **Bước 3.4:** Nếu $i = 0$: cập nhật $\text{mrk}$ theo dấu $f(a) \cdot f(x_{\text{new}})$.
+   - **Bước 3.5:** Gán $x = x_{\text{new}}$.
+**Bước 4:** In kết quả $\text{round}(x, rbl)$.
 
-**Đầu vào:** Hàm $f(x)$, khoảng $[a, b]$ với $f(a) \cdot f(b) < 0$, ngưỡng $\eta > 0$,
-$m_1 = \min|f'(x)|$, $M_1 = \max|f'(x)|$ trên $[a, b]$.
-**Đầu ra:** Nghiệm $x$ xấp xỉ của $f(x) = 0$.
+---
 
-1. Kiểm tra $f(a) \cdot f(b) < 0$, $M_1 \cdot m_1 > 0$.
-2. Gán $x = a$, $\text{mrk} = b$.
-3. Lặp:
-   a. Tính $x_{\text{new}} = \dfrac{\text{mrk} \cdot f(x) - x \cdot f(\text{mrk})}{f(x) - f(\text{mrk})}$.
-   b. Tính sai số tương đối: $\sigma_x = \dfrac{|x_{\text{new}} - x|}{|x_{\text{new}}|}$.
-   c. Nếu $\sigma_x < \dfrac{\eta \cdot m_1}{M_1 - m_1}$: thoát vòng lặp.
-   d. Nếu $i = 0$: cập nhật $\text{mrk}$ theo dấu $f(a) \cdot f(x_{\text{new}})$.
-   e. Gán $x = x_{\text{new}}$.
-4. In kết quả $\text{round}(x, rbl)$.
+## v4 — Dừng theo sai số tương đối
+
+**Mục tiêu:** Tìm nghiệm với độ chính xác tương đối $\eta$.
+**Đầu vào:** Hàm $f(x)$, khoảng $[a, b]$ với $f(a) \cdot f(b) < 0$, ngưỡng $\eta > 0$, $m_1 = \min|f'(x)|$, $M_1 = \max|f'(x)|$ trên $[a, b]$.
+**Đầu ra:** Nghiệm $x$ xấp xỉ.
+
+**Bước 1:** Kiểm tra $f(a) \cdot f(b) < 0$, $M_1 \cdot m_1 > 0$.
+**Bước 2:** Gán $x = a$, $\text{mrk} = b$.
+**Bước 3:** Lặp
+   - **Bước 3.1:** Tính $x_{\text{new}} = \dfrac{\text{mrk} \cdot f(x) - x \cdot f(\text{mrk})}{f(x) - f(\text{mrk})}$.
+   - **Bước 3.2:** Tính sai số tương đối: $\sigma_x = \dfrac{|x_{\text{new}} - x|}{|x_{\text{new}}|}$.
+   - **Bước 3.3:** Nếu $\sigma_x < \dfrac{\eta \cdot m_1}{M_1 - m_1}$: thoát vòng lặp.
+   - **Bước 3.4:** Nếu $i = 0$: cập nhật $\text{mrk}$ theo dấu $f(a) \cdot f(x_{\text{new}})$.
+   - **Bước 3.5:** Gán $x = x_{\text{new}}$.
+**Bước 4:** In kết quả $\text{round}(x, rbl)$.

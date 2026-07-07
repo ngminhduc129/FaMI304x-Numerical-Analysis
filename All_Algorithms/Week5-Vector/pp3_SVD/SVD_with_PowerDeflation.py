@@ -12,10 +12,14 @@
 # Input: Đọc từ file SVD_input_A.txt
 # Cách dùng: python SVD_with_PowerDeflation.py
 # =============================================================================
+from pathlib import Path
+import contextlib
 from fractions import Fraction
 from typing import List, Tuple, Union
 import numpy as np
 import pandas as pd
+
+__dir__ = Path(__file__).parent.resolve()
 
 pd.set_option('display.precision', 12)  # Increase decimal precision
 pd.set_option('display.width', 300)     # Wider display
@@ -42,7 +46,7 @@ def read_matrix(path: str) -> pd.DataFrame:
                         val = float(tok)
                 except Exception as e:
                     raise ValueError(
-                        f"Error parsing token '{tok}' on line {lineno} in {path}: {e}"
+                        f"Lỗi phân tích token '{tok}' tại dòng {lineno} trong {path}: {e}"
                     )
                 row.append(val)
             data.append(row)
@@ -56,7 +60,7 @@ def read_matrix(path: str) -> pd.DataFrame:
     if any(len(r) != ncol for r in data):
         lengths = [len(r) for r in data]
         raise ValueError(
-            f"Row-length mismatch in {path}: expected {ncol} columns, got {lengths}"
+            f"Độ dài hàng không khớp trong {path}: mong đợi {ncol} cột, nhận được {lengths}"
         )
 
     return pd.DataFrame(data)
@@ -73,9 +77,6 @@ def print_matrix(df: pd.DataFrame, float_format: str = '{:,.9f}') -> None:
             float_format=float_format.format
         )
     )
-# input
-A_df = read_matrix("SVD_input_A.txt")
-print_matrix(A_df)
 def deflate_once(A: np.ndarray, lam: float, v: np.ndarray, x0_left: np.ndarray, tol: float, max_iter: int, norm_ord: Union[int, float], precision: int) -> np.ndarray:
     """
     Deflate matrix A by removing the effect of eigenpair (lam, v) for non-symmetric A:
@@ -92,10 +93,10 @@ def deflate_once(A: np.ndarray, lam: float, v: np.ndarray, x0_left: np.ndarray, 
     # Step 2: normalize w so that w^T v = 1
     scale = w.dot(v)
     if abs(scale) < 1e-12:
-        raise ValueError("Left and right eigenvectors nearly orthogonal; cannot deflate.")
+        raise ValueError("Vector riêng trái và phải gần như trực giao; không thể xuống thang.")
     w = w / scale
     # Step 3: rank-1 deflation
-    print(A - lam * np.outer(v, w))
+    print(pd.DataFrame(A - lam * np.outer(v, w)).to_string(index=False, header=False))
     return A - lam * np.outer(v, w)
 def power_method(A,
                  x0,
@@ -143,7 +144,7 @@ def power_method(A,
         # Estimate eigenvalue via the chosen norm
         lambda_new = np.linalg.norm(y, ord=norm_ord)
         if lambda_new == 0:
-            raise ZeroDivisionError("Norm of A*x is zero; unable to continue.")
+            raise ZeroDivisionError("Chuẩn của A*x bằng 0; không thể tiếp tục.")
         # Normalize to get next eigenvector estimate
         x_new = y / lambda_new
 
@@ -159,7 +160,7 @@ def power_method(A,
         eigenvalue = lambda_new
 
     # Build and display DataFrame
-    cols = ['Iteration'] + [f'y{i+1}' for i in range(n)] + ['lambda'] + [f'x{i+1}' for i in range(n)]
+    cols = ['Lần lặp'] + [f'y{i+1}' for i in range(n)] + ['lambda'] + [f'x{i+1}' for i in range(n)]
     df = pd.DataFrame(history, columns=cols)
     if (display==True):
       print(df.to_string(
@@ -243,7 +244,7 @@ def power_method_case2(
         eigen2 = lambda2_new
 
     # Display results in pandas
-    cols = ['Iteration'] + [f'y{i+1}' for i in range(n)] + ['lambda^2'] + [f'x1_{i+1}' for i in range(n)] + [f'x2_{i+1}' for i in range(n)]
+    cols = ['Lần lặp'] + [f'y{i+1}' for i in range(n)] + ['lambda^2'] + [f'x1_{i+1}' for i in range(n)] + [f'x2_{i+1}' for i in range(n)]
     df = pd.DataFrame(history, columns=cols)
     if (display==True):
       print(df.to_string(
@@ -278,7 +279,7 @@ def compute_all_eigenpairs(
 
     for k in range(n):
         # Determine which power-method to apply: always use case1 for real eigenvalues
-        print(f"Finding eigenpair {k+1}: matrix size {M.shape}")
+        print(f"Đang tìm cặp trị riêng {k+1}: kích thước ma trận {M.shape}")
         # Call power_method (case1) for new matrix M
         lam, v = power_method(
             M, y, tol=tol, max_iter=max_iter,
@@ -296,7 +297,7 @@ def compute_all_eigenpairs(
     eigs_sorted, vecs_sorted = zip(*pairs)
 
  # Display final results: eigenvalue and eigenvector on same line
-    print("All eigenvalues and eigenvectors (sorted):")
+    print("Tất cả trị riêng và vector riêng (sắp xếp):")
     for i, (lam, vec) in enumerate(zip(eigs_sorted, vecs_sorted), start=1):
         vec_str = ", ".join(f"{x:.{precision}f}" for x in vec)
         print(f"  λ{i} = {lam:.{precision}f}, v = [{vec_str}]")
@@ -338,15 +339,15 @@ def compute_svd(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame, p
     A = A_df.values.astype(float)
     m, n = A.shape
 
-    print("--- Input matrix A ---")
+    print("--- Ma trận đầu vào A ---")
     print_matrix(A_df)
 
     # Choose smaller route
     if True:
-        print("Route: m <= n, use M = A · Aᵀ ({}×{})".format(m, m))
+        print("Cách: m <= n, dùng M = A · Aᵀ ({}×{})".format(m, m))
         M = A.dot(A.T)
         M_df = pd.DataFrame(M)
-        print("Matrix M:")
+        print("Ma trận M:")
         print_matrix(M_df)
 
         # Eigen-decomposition of M
@@ -364,13 +365,13 @@ def compute_svd(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame, p
         
         # Print eigenpairs
         for i, lam in enumerate(eigvals, start=1):
-            print(f"Eigenvalue λ{i} = {lam}")
-            print(f"Eigenvector u{i}:")
+            print(f"Trị riêng λ{i} = {lam}")
+            print(f"Vector riêng u{i}:")
             print_matrix(pd.DataFrame(eigvecs[:, i-1]))
 
         # Singular values
         sigmas = np.sqrt(np.clip(eigvals, 0, None))
-        print("Singular values:")
+        print("Giá trị kỳ dị:")
         for i, s in enumerate(sigmas, start=1):
             print(f"σ{i} = {s}")
 
@@ -379,7 +380,7 @@ def compute_svd(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame, p
         for i in range(min(m, n)):
             Sigma[i, i] = sigmas[i]
         Sigma_df = pd.DataFrame(Sigma)
-        print("Sigma matrix Σ:")
+        print("Ma trận Σ:")
         print_matrix(Sigma_df)
 
         # Compute right singular vectors V
@@ -390,7 +391,7 @@ def compute_svd(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame, p
             else:
                 v = np.zeros(n)
             V[:, i] = v
-            print(f"Right singular vector v{i+1}:")
+            print(f"Vector kỳ dị phải v{i+1}:")
             print_matrix(pd.DataFrame(v))
 
         # Complete V to full orthonormal basis
@@ -417,15 +418,15 @@ def compute_svd_2(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame,
     A = A_df.values.astype(float)
     m, n = A.shape
 
-    print("--- Input matrix A ---")
+    print("--- Ma trận đầu vào A ---")
     print_matrix(A_df)
 
     # Choose smaller route
     if True:
-        print("Route: m > n, use N = Aᵀ · A ({}×{})".format(n, n))
+        print("Cách: m > n, dùng N = Aᵀ · A ({}×{})".format(n, n))
         N = A.T.dot(A)
         N_df = pd.DataFrame(N)
-        print("Matrix N:")
+        print("Ma trận N:")
         print_matrix(N_df)
 
         # Eigen-decomposition of M
@@ -442,12 +443,12 @@ def compute_svd_2(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame,
         eigvecs = np.column_stack(eigvecs_list)
 
         for j, lam in enumerate(eigvals, start=1):
-            print(f"Eigenvalue λ{j} = {lam}")
-            print(f"Eigenvector v{j}:")
+            print(f"Trị riêng λ{j} = {lam}")
+            print(f"Vector riêng v{j}:")
             print_matrix(pd.DataFrame(eigvecs[:, j-1]))
 
         sigmas = np.sqrt(np.clip(eigvals, 0, None))
-        print("Singular values:")
+        print("Giá trị kỳ dị:")
         for j, s in enumerate(sigmas, start=1):
             print(f"σ{j} = {s}")
 
@@ -455,7 +456,7 @@ def compute_svd_2(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame,
         for j in range(min(m, n)):
             Sigma[j, j] = sigmas[j]
         Sigma_df = pd.DataFrame(Sigma)
-        print("Sigma matrix Σ:")
+        print("Ma trận Σ:")
         print_matrix(Sigma_df)
 
         # Compute left singular vectors U
@@ -466,7 +467,7 @@ def compute_svd_2(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame,
             else:
                 u = np.zeros(m)
             U[:, j] = u
-            print(f"Left singular vector u{j+1}:")
+            print(f"Vector kỳ dị trái u{j+1}:")
             print_matrix(pd.DataFrame(u))
 
         # Complete U to full orthonormal basis
@@ -479,20 +480,26 @@ def compute_svd_2(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame,
 
     return U_df, Sigma_df, Vt_df
 
-U, S, Vt = compute_svd(A_df, tol=1e-9)
-print("--- Final U ---")
-print_matrix(U)
-print("--- Final Σ ---")
-print_matrix(S)
-print("--- Final V^T ---")
-print_matrix(Vt)
-U, S, Vt = compute_svd_2(A_df, tol=1e-9)
-print("--- Final U ---")
-print_matrix(U)
-print("--- Final Σ ---")
-print_matrix(S)
-print("--- Final V^T ---")
-print_matrix(Vt)
+if __name__ == "__main__":
+    output_path = str(__dir__ / "SVD_with_PowerDeflation_result.txt")
+    with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+        A_df = read_matrix(str(__dir__ / "SVD_input_A.txt"))
+        print_matrix(A_df)
+        U, S, Vt = compute_svd(A_df, tol=1e-9)
+        print("--- U cuối cùng ---")
+        print_matrix(U)
+        print("--- Σ cuối cùng ---")
+        print_matrix(S)
+        print("--- V^T cuối cùng ---")
+        print_matrix(Vt)
+        U, S, Vt = compute_svd_2(A_df, tol=1e-9)
+        print("--- U cuối cùng ---")
+        print_matrix(U)
+        print("--- Σ cuối cùng ---")
+        print_matrix(S)
+        print("--- V^T cuối cùng ---")
+        print_matrix(Vt)
+    print(f"Đã ghi kết quả vào {output_path}")
 
 
 

@@ -25,28 +25,47 @@ Vector suy biến phải:
 
 $$v_i = \frac{A^T \cdot u_i}{\sigma_i}$$
 
+---
+
 ## Thuật toán
 
-**Đầu vào:** Ma trận $A$ kích thước $m \times n$, ngưỡng sai số $tol$
+**Mục tiêu:** Tính phân rã SVD của ma trận $A$.
+**Đầu vào:** Ma trận $A$ kích thước $m \times n$, ngưỡng sai số $tol$.
+**Đầu ra:** $U$, $\Sigma$, $V^T$.
 
-**Đầu ra:** $U$, $\Sigma$, $V^T$
+**Bước 1:** Chọn hướng tính
+   - Nếu $m \le n$: dùng $M = A \cdot A^T$.
+   - Nếu $m > n$: dùng $M = A^T \cdot A$.
 
-1. Chọn hướng tính: nếu $m \le n$, dùng $M = A \cdot A^T$
-2. Tính $M = A \cdot A^T$
-3. Tìm trị riêng và vector riêng của $M$ bằng `np.linalg.eigh`
-4. Sắp xếp trị riêng giảm dần
-5. Tính giá trị kỳ dị: $\sigma_i = \sqrt{\lambda_i}$
-6. Xây dựng ma trận $\Sigma$ với $\sigma_i$ trên đường chéo
-7. Tính vector suy biến phải $v_i = A^T \cdot u_i / \sigma_i$
-8. Hoàn thiện $V$ thành cơ sở trực chuẩn đầy đủ
-9. $U$ là ma trận các vector riêng của $M$, $V^T$ là chuyển vị của $V$
+**Bước 2:** Tính $M = A \cdot A^T$ (hoặc $A^T \cdot A$).
 
-## Hàm bổ sung: complete_orthonormal_basis
+**Bước 3:** Tìm trị riêng và vector riêng của $M$ bằng `np.linalg.eigh`.
 
-Mở rộng $B$ ($n \times k$) có các cột trực chuẩn thành cơ sở trực chuẩn $n \times n$ đầy đủ:
+**Bước 4:** Sắp xếp trị riêng giảm dần.
 
-1. Khởi tạo $Q$ kích thước $n \times n$, gán $Q[:, :k] = B$
-2. Với $j = k$ đến $n-1$:
-   - Tạo vector ngẫu nhiên $v$
-   - Trực giao hóa $v$ với các cột $Q[:, :j]$
-   - Chuẩn hóa $v$ và gán vào $Q[:, j]$
+**Bước 5:** Tính giá trị kỳ dị: $\sigma_i = \sqrt{\lambda_i}$.
+
+**Bước 6:** Xây dựng ma trận $\Sigma$ với $\sigma_i$ trên đường chéo.
+
+**Bước 7:** Tính vector suy biến phải $v_i = A^T \cdot u_i / \sigma_i$.
+
+**Bước 8:** Hoàn thiện $V$ thành cơ sở trực chuẩn đầy đủ (dùng `complete_orthonormal_basis`).
+
+**Bước 9:** $U$ là ma trận các vector riêng của $M$, $V^T$ là chuyển vị của $V$.
+
+**Bước 10:** Trả về $U$, $\Sigma$, $V^T$.
+
+---
+
+## Hàm bổ sung: `complete_orthonormal_basis`
+
+**Mục tiêu:** Mở rộng $B$ ($n \times k$) có các cột trực chuẩn thành cơ sở trực chuẩn $n \times n$ đầy đủ.
+**Đầu vào:** Ma trận $B$ kích thước $n \times k$ với các cột trực chuẩn.
+**Đầu ra:** Ma trận $Q$ kích thước $n \times n$ trực chuẩn.
+
+**Bước 1:** Khởi tạo $Q$ kích thước $n \times n$, gán $Q[:, :k] = B$.
+**Bước 2:** Với $j = k$ đến $n-1$:
+   - **Bước 2.1:** Tạo vector ngẫu nhiên $v$.
+   - **Bước 2.2:** Trực giao hóa $v$ với các cột $Q[:, :j]$.
+   - **Bước 2.3:** Chuẩn hóa $v$ và gán vào $Q[:, j]$.
+**Bước 3:** Trả về $Q$.

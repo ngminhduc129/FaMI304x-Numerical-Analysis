@@ -14,9 +14,14 @@
 import numpy as np
 import pandas as pd
 
-pd.set_option('display.precision', 15)  # Increase decimal precision
+pd.set_option('display.precision', 7)  # Độ chính xác hiển thị
 pd.set_option('display.width', 150)     # Wider display
 pd.set_option('display.max_columns', None)  # Show all column
+import contextlib
+from pathlib import Path
+
+__dir__ = Path(__file__).parent
+
 def secant_iteration_v1 (f, df, a, b, n, rbl):	
 	M1 = max([np.abs(df(x)) for x in [a, b]]) #M1 is the maximum value of |f'(x)| in the interval [a,b]
 	m1 = min([np.abs(df(x)) for x in [a, b]]) #m1 is the minimum value of |f'(x)| in the interval [a,b]
@@ -24,7 +29,7 @@ def secant_iteration_v1 (f, df, a, b, n, rbl):
 
 	# Error function
 	if (f(a) * f(b) >= 0) or (M1 * m1 <= 0): 
-		print("Can not find a root in the given interval");
+		print("Không thể tìm nghiệm trong khoảng đã cho");
 		return 0;
 
 	# Implementing Secant Method
@@ -59,20 +64,12 @@ def secant_iteration_v1 (f, df, a, b, n, rbl):
 	print(df_results.to_string(index=False))
 
 	if rbl == None:
-		print(f"The value of root is: {x}")
+		print(f"Giá trị nghiệm là: {x}")
 	else:
 		total_delta = delta_x + 0.5 * 10**(-rbl) #must calculate roundoff error
-		print(f"The value of root with {rbl} decimal point is: {round(x, rbl)}")
-		print(f"Relative error is: {total_delta}")
-f = lambda x: x ** 5 - 12; 
-df = lambda x: 5 * (x ** 4)
+		print(f"Giá trị nghiệm với {rbl} chữ số thập phân là: {round(x, rbl)}")
+		print(f"Sai số tương đối là: {total_delta}")
 
-a = 1
-b = 2
-
-n = 20
-rbl = 9;
-secant_iteration_v1 (f, df, a, b, n, rbl)
 def secant_iteration_v2 (f, df, a, b, n, rbl):	
 	M1 = max([np.abs(df(x)) for x in [a, b]]) #M1 is the maximum value of |f'(x)| in the interval [a,b]
 	m1 = min([np.abs(df(x)) for x in [a, b]]) #m1 is the minimum value of |f'(x)| in the interval [a,b]
@@ -80,7 +77,7 @@ def secant_iteration_v2 (f, df, a, b, n, rbl):
 
 	# Error function
 	if (f(a) * f(b) >= 0) or (M1 * m1 <= 0): 
-		print("Can not find a root in the given interval");
+		print("Không thể tìm nghiệm trong khoảng đã cho");
 		return 0;
 
 	# Implementing Secant Method
@@ -115,20 +112,12 @@ def secant_iteration_v2 (f, df, a, b, n, rbl):
 	print(df_results.to_string(index=False))
 
 	if rbl == None:
-		print(f"The value of root is: {x}")
+		print(f"Giá trị nghiệm là: {x}")
 	else:
 		total_delta = delta_x + 0.5 * 10**(-rbl) #must calculate roundoff error
-		print(f"The value of root with {rbl} decimal point is: {round(x, rbl)}")
-		print(f"Relative error is: {total_delta}")
-f = lambda x: x ** 5 - 12; 
-df = lambda x: 5 * (x ** 4)
+		print(f"Giá trị nghiệm với {rbl} chữ số thập phân là: {round(x, rbl)}")
+		print(f"Sai số tương đối là: {total_delta}")
 
-a = 1
-b = 2
-
-n = 20
-rbl = 9;
-secant_iteration_v2 (f, df, a, b, n, rbl)
 def secant_recursion_absolute_v1 (f, df, a, b, eps):	
 	M1 = max([np.abs(df(x)) for x in [a, b]]) #M1 is the maximum value of |f'(x)| in the interval [a,b]
 	m1 = min([np.abs(df(x)) for x in [a, b]]) #m1 is the minimum value of |f'(x)| in the interval [a,b]
@@ -136,7 +125,7 @@ def secant_recursion_absolute_v1 (f, df, a, b, eps):
 
 	# Error function
 	if (f(a) * f(b) >= 0) or (M1 * m1 <= 0): 
-		print("Can not find a root in the given interval");
+		print("Không thể tìm nghiệm trong khoảng đã cho");
 		return 0;
 
 	# Implementing Secant Method
@@ -177,25 +166,8 @@ def secant_recursion_absolute_v1 (f, df, a, b, eps):
 	df_results = pd.DataFrame(results) 
 	print(df_results.to_string(index=False))
 
-	print(f"The value of root with absolute error {eps} is: {x}")
-f = lambda x: x**5 - 81*x - 243 #approximate e
-df = lambda x: 20*(x**3)
+	print(f"Giá trị nghiệm với sai số tuyệt đối {eps} là: {x}")
 
-a = 3
-b = 6
-
-eps = 3 * 1e-6
-
-secant_recursion_absolute_v1 (f, df, a, b, eps)
-f = lambda x: np.tan(x/4) - 1 #approximate pi
-df = lambda x: (1/4) * 1/(np.cos(x/4)**2)
-
-a = 3
-b = 4
-
-eps = 0.5 * pow(10, -7)
-
-secant_recursion_absolute_v1 (f, df, a, b, eps)
 def secant_recursion_absolute_v2 (f, df, a, b, eps):	
 	M1 = max([np.abs(df(x)) for x in [a, b]]) #M1 is the maximum value of |f'(x)| in the interval [a,b]
 	m1 = min([np.abs(df(x)) for x in [a, b]]) #m1 is the minimum value of |f'(x)| in the interval [a,b]
@@ -203,7 +175,7 @@ def secant_recursion_absolute_v2 (f, df, a, b, eps):
 
 	# Error function
 	if (f(a) * f(b) >= 0) or (M1 * m1 <= 0): 
-		print("Can not find a root in the given interval");
+		print("Không thể tìm nghiệm trong khoảng đã cho");
 		return 0;
 
 	# Implementing Secant Method
@@ -244,25 +216,8 @@ def secant_recursion_absolute_v2 (f, df, a, b, eps):
 	df_results = pd.DataFrame(results) 
 	print(df_results.to_string(index=False))
 
-	print(f"The value of root with absoulte error {eps} is: {x}")
-f = lambda x: x**5 - 17
-df = lambda x: 5 * x**4
+	print(f"Giá trị nghiệm với sai số tuyệt đối {eps} là: {x}")
 
-a = 1
-b = 2
-
-eps = 0.5 * pow(10, -6)
-
-secant_recursion_absolute_v2 (f, df, a, b, eps)
-f = lambda x: np.e**x - np.cos(2*x)
-df = lambda x: np.e**x + 2*np.sin(2*x)
-
-a = -0.5
-b = -0.1
-
-eps = 0.5 * pow(10, -8)
-
-secant_recursion_absolute_v2 (f, df, a, b, eps)
 def secant_recursion_relative (f, df, a, b, eta):	
 	M1 = max([np.abs(df(x)) for x in [a, b]]) #M1 is the maximum value of |f'(x)| in the interval [a,b]
 	m1 = min([np.abs(df(x)) for x in [a, b]]) #m1 is the minimum value of |f'(x)| in the interval [a,b]
@@ -270,7 +225,7 @@ def secant_recursion_relative (f, df, a, b, eta):
 
 	# Error function
 	if (f(a) * f(b) >= 0) or (M1 * m1 <= 0): 
-		print("Can not find a root in the given interval");
+		print("Không thể tìm nghiệm trong khoảng đã cho");
 		return 0;
 
 	# Implementing Secant Method
@@ -311,35 +266,94 @@ def secant_recursion_relative (f, df, a, b, eta):
 	df_results = pd.DataFrame(results) 
 	print(df_results.to_string(index=False))
 
-	print(f"The value of root with relative error {eta} is: {x}")
-f = lambda x: x**5 - 3*x**3 + 2*x**2 - x + 5
-df = lambda x: 5*x**4 - 9*x**2 + 4*x - 1
+	print(f"Giá trị nghiệm với sai số tương đối {eta} là: {x}")
 
-a = -3
-b = -2
+if __name__ == "__main__":
+    output_path = str(__dir__ / "pp2_secant_result.txt")
+    with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+        f = lambda x: x ** 5 - 12; 
+        df = lambda x: 5 * (x ** 4)
 
-eta = 0.05 * pow(10, -2)
+        a = 1
+        b = 2
 
-secant_recursion_relative (f, df, a, b, eta)
-f = lambda x: np.e**(-x) - x
-df = lambda x: -np.e**(-x) - 1
+        n = 20
+        rbl = 9;
+        secant_iteration_v1 (f, df, a, b, n, rbl)
 
-a = 0
-b = 1
+        f = lambda x: x ** 5 - 12; 
+        df = lambda x: 5 * (x ** 4)
 
-eta = 0.05 * pow(10, -2)
+        a = 1
+        b = 2
 
-secant_recursion_relative (f, df, a, b, eta)
-f = lambda x: 2**x - 5*x + np.sin(x)
-df = lambda x: 2**x*np.log(2) - 5 + np.cos(x)
+        n = 20
+        rbl = 9;
+        secant_iteration_v2 (f, df, a, b, n, rbl)
 
-a = 0
-b = 1
+        f = lambda x: x**5 - 81*x - 243 #approximate e
+        df = lambda x: 20*(x**3)
 
-eta = 0.05 * pow(10, -2)
+        a = 3
+        b = 6
 
-secant_recursion_relative (f, df, a, b, eta)
+        eps = 3 * 1e-6
 
+        secant_recursion_absolute_v1 (f, df, a, b, eps)
+        f = lambda x: np.tan(x/4) - 1 #approximate pi
+        df = lambda x: (1/4) * 1/(np.cos(x/4)**2)
 
+        a = 3
+        b = 4
 
+        eps = 0.5 * pow(10, -7)
 
+        secant_recursion_absolute_v1 (f, df, a, b, eps)
+
+        f = lambda x: x**5 - 17
+        df = lambda x: 5 * x**4
+
+        a = 1
+        b = 2
+
+        eps = 0.5 * pow(10, -6)
+
+        secant_recursion_absolute_v2 (f, df, a, b, eps)
+        f = lambda x: np.e**x - np.cos(2*x)
+        df = lambda x: np.e**x + 2*np.sin(2*x)
+
+        a = -0.5
+        b = -0.1
+
+        eps = 0.5 * pow(10, -8)
+
+        secant_recursion_absolute_v2 (f, df, a, b, eps)
+
+        f = lambda x: x**5 - 3*x**3 + 2*x**2 - x + 5
+        df = lambda x: 5*x**4 - 9*x**2 + 4*x - 1
+
+        a = -3
+        b = -2
+
+        eta = 0.05 * pow(10, -2)
+
+        secant_recursion_relative (f, df, a, b, eta)
+        f = lambda x: np.e**(-x) - x
+        df = lambda x: -np.e**(-x) - 1
+
+        a = 0
+        b = 1
+
+        eta = 0.05 * pow(10, -2)
+
+        secant_recursion_relative (f, df, a, b, eta)
+        f = lambda x: 2**x - 5*x + np.sin(x)
+        df = lambda x: 2**x*np.log(2) - 5 + np.cos(x)
+
+        a = 0
+        b = 1
+
+        eta = 0.05 * pow(10, -2)
+
+        secant_recursion_relative (f, df, a, b, eta)
+    print(f"Đã ghi kết quả vào {output_path}")

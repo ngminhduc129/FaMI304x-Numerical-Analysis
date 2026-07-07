@@ -12,9 +12,13 @@
 # Input: Đọc từ file SVD_input_A.txt
 # Cách dùng: python pp3_SVD.py
 # =============================================================================
+from pathlib import Path
+import contextlib
 import numpy as np
 import pandas as pd
 from typing import Tuple
+
+__dir__ = Path(__file__).parent.resolve()
 
 pd.set_option('display.precision', 12)  # Increase decimal precision
 pd.set_option('display.width', 300)     # Wider display
@@ -41,7 +45,7 @@ def read_matrix(path: str) -> pd.DataFrame:
                         val = float(tok)
                 except Exception as e:
                     raise ValueError(
-                        f"Error parsing token '{tok}' on line {lineno} in {path}: {e}"
+                        f"Lỗi phân tích token '{tok}' tại dòng {lineno} trong {path}: {e}"
                     )
                 row.append(val)
             data.append(row)
@@ -55,7 +59,7 @@ def read_matrix(path: str) -> pd.DataFrame:
     if any(len(r) != ncol for r in data):
         lengths = [len(r) for r in data]
         raise ValueError(
-            f"Row-length mismatch in {path}: expected {ncol} columns, got {lengths}"
+            f"Độ dài hàng không khớp trong {path}: mong đợi {ncol} cột, nhận được {lengths}"
         )
 
     return pd.DataFrame(data)
@@ -72,9 +76,6 @@ def print_matrix(df: pd.DataFrame, float_format: str = '{:,.9f}') -> None:
             float_format=float_format.format
         )
     )
-# input
-A_df = read_matrix("SVD_input_A.txt")
-print_matrix(A_df)
 def complete_orthonormal_basis(B: np.ndarray, tol: float = 1e-12) -> np.ndarray:
     """
     Given B (n×k) with orthonormal columns, extend to a full n×n orthonormal basis.
@@ -111,15 +112,15 @@ def compute_svd(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame, p
     A = A_df.values.astype(float)
     m, n = A.shape
 
-    print("--- Input matrix A ---")
+    print("--- Ma trận đầu vào A ---")
     print_matrix(A_df)
 
     # Choose smaller route
     if True:
-        print("Route: m <= n, use M = A · Aᵀ ({}×{})".format(m, m))
+        print("Cách: m <= n, dùng M = A · Aᵀ ({}×{})".format(m, m))
         M = A.dot(A.T)
         M_df = pd.DataFrame(M)
-        print("Matrix M:")
+        print("Ma trận M:")
         print_matrix(M_df)
 
         # Eigen-decomposition of M
@@ -131,13 +132,13 @@ def compute_svd(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame, p
 
         # Print eigenpairs
         for i, lam in enumerate(eigvals, start=1):
-            print(f"Eigenvalue λ{i} = {lam}")
-            print(f"Eigenvector u{i}:")
+            print(f"Trị riêng λ{i} = {lam}")
+            print(f"Vector riêng u{i}:")
             print_matrix(pd.DataFrame(eigvecs[:, i-1]))
 
         # Singular values
         sigmas = np.sqrt(np.clip(eigvals, 0, None))
-        print("Singular values:")
+        print("Giá trị kỳ dị:")
         for i, s in enumerate(sigmas, start=1):
             print(f"σ{i} = {s}")
 
@@ -146,7 +147,7 @@ def compute_svd(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame, p
         for i in range(min(m, n)):
             Sigma[i, i] = sigmas[i]
         Sigma_df = pd.DataFrame(Sigma)
-        print("Sigma matrix Σ:")
+        print("Ma trận Σ:")
         print_matrix(Sigma_df)
 
         # Compute right singular vectors V
@@ -157,7 +158,7 @@ def compute_svd(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame, p
             else:
                 v = np.zeros(n)
             V[:, i] = v
-            print(f"Right singular vector v{i+1}:")
+            print(f"Vector kỳ dị phải v{i+1}:")
             print_matrix(pd.DataFrame(v))
 
         # Complete V to full orthonormal basis
@@ -184,15 +185,15 @@ def compute_svd_2(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame,
     A = A_df.values.astype(float)
     m, n = A.shape
 
-    print("--- Input matrix A ---")
+    print("--- Ma trận đầu vào A ---")
     print_matrix(A_df)
 
     # Choose smaller route
     if True:
-        print("Route: m > n, use N = Aᵀ · A ({}×{})".format(n, n))
+        print("Cách: m > n, dùng N = Aᵀ · A ({}×{})".format(n, n))
         N = A.T.dot(A)
         N_df = pd.DataFrame(N)
-        print("Matrix N:")
+        print("Ma trận N:")
         print_matrix(N_df)
 
         # Eigen-decomposition of N
@@ -202,12 +203,12 @@ def compute_svd_2(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame,
         eigvecs = eigvecs[:, idx]
 
         for j, lam in enumerate(eigvals, start=1):
-            print(f"Eigenvalue λ{j} = {lam}")
-            print(f"Eigenvector v{j}:")
+            print(f"Trị riêng λ{j} = {lam}")
+            print(f"Vector riêng v{j}:")
             print_matrix(pd.DataFrame(eigvecs[:, j-1]))
 
         sigmas = np.sqrt(np.clip(eigvals, 0, None))
-        print("Singular values:")
+        print("Giá trị kỳ dị:")
         for j, s in enumerate(sigmas, start=1):
             print(f"σ{j} = {s}")
 
@@ -215,7 +216,7 @@ def compute_svd_2(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame,
         for j in range(min(m, n)):
             Sigma[j, j] = sigmas[j]
         Sigma_df = pd.DataFrame(Sigma)
-        print("Sigma matrix Σ:")
+        print("Ma trận Σ:")
         print_matrix(Sigma_df)
 
         # Compute left singular vectors U
@@ -226,7 +227,7 @@ def compute_svd_2(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame,
             else:
                 u = np.zeros(m)
             U[:, j] = u
-            print(f"Left singular vector u{j+1}:")
+            print(f"Vector kỳ dị trái u{j+1}:")
             print_matrix(pd.DataFrame(u))
 
         # Complete U to full orthonormal basis
@@ -239,20 +240,26 @@ def compute_svd_2(A_df: pd.DataFrame, tol: float = 1e-10) -> Tuple[pd.DataFrame,
 
     return U_df, Sigma_df, Vt_df
 
-U, S, Vt = compute_svd(A_df, tol=1e-9)
-print("--- Final U ---")
-print_matrix(U)
-print("--- Final Σ ---")
-print_matrix(S)
-print("--- Final V^T ---")
-print_matrix(Vt)
-U, S, Vt = compute_svd_2(A_df, tol=1e-9)
-print("--- Final U ---")
-print_matrix(U)
-print("--- Final Σ ---")
-print_matrix(S)
-print("--- Final V^T ---")
-print_matrix(Vt)
+if __name__ == "__main__":
+    output_path = str(__dir__ / "pp3_SVD_result.txt")
+    with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+        A_df = read_matrix(str(__dir__ / "SVD_input_A.txt"))
+        print_matrix(A_df)
+        U, S, Vt = compute_svd(A_df, tol=1e-9)
+        print("--- U cuối cùng ---")
+        print_matrix(U)
+        print("--- Σ cuối cùng ---")
+        print_matrix(S)
+        print("--- V^T cuối cùng ---")
+        print_matrix(Vt)
+        U, S, Vt = compute_svd_2(A_df, tol=1e-9)
+        print("--- U cuối cùng ---")
+        print_matrix(U)
+        print("--- Σ cuối cùng ---")
+        print_matrix(S)
+        print("--- V^T cuối cùng ---")
+        print_matrix(Vt)
+    print(f"Đã ghi kết quả vào {output_path}")
 
 
 

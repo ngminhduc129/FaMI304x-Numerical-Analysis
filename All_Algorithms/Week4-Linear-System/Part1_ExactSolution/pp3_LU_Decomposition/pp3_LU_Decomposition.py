@@ -11,10 +11,14 @@
 # Input: Đọc từ file LU_input_A.txt
 # Cách dùng: python pp3_LU_Decomposition.py
 # =============================================================================
+from pathlib import Path
 from fractions import Fraction
 from typing import Tuple, Union
 import numpy as np
 import pandas as pd
+import contextlib
+
+__dir__ = Path(__file__).parent.resolve()
 
 pd.set_option('display.precision', 12)  # Increase decimal precision
 pd.set_option('display.width', 300)     # Wider display
@@ -47,7 +51,7 @@ def input_matrix(filename, convert_fractions=False):
     dtype = float if convert_fractions else object
     return np.array(matrix, dtype=dtype)
 
-def output_matrix(X: np.ndarray, precision: int = 12):
+def output_matrix(X: np.ndarray, precision: int = 7):
     """
     Prints a NumPy array (vector or matrix) in a clean tabular format using pandas.
     
@@ -96,8 +100,9 @@ def lu_decomposition(A):
             # Upper triangular elements (normalized)
             U[i][k] = (A[i][k] - sum(L[i][j] * U[j][k] for j in range(i))) / L[i][i]
 
-        print(f"Step {i + 1}:")
-        print("L:", L, "\n", "U:", U, "\n")
+        print(f"Bước {i + 1}:")
+        print(pd.DataFrame(L).to_string(index=False, header=False))
+        print(pd.DataFrame(U).to_string(index=False, header=False))
     
     return L, U
 def verify_lu_decomposition(A, L, U):
@@ -109,10 +114,10 @@ def verify_lu_decomposition(A, L, U):
     L (numpy.ndarray): Lower triangular matrix
     U (numpy.ndarray): Upper triangular matrix
     """
-    print("\nLower triangular matrix L:")
-    print(L)
-    print("\nUpper triangular matrix U:")
-    print(U)
+    print("\nMa trận tam giác dưới L:")
+    print(pd.DataFrame(L).to_string(index=False, header=False))
+    print("\nMa trận tam giác trên U:")
+    print(pd.DataFrame(U).to_string(index=False, header=False))
 
     A_np = np.array(A).astype(np.float64)
     L_np = np.array(L).astype(np.float64)
@@ -121,20 +126,23 @@ def verify_lu_decomposition(A, L, U):
     # Multiply L and U
     LU = np.dot(L_np, U_np)
     print("\nL × U:")
-    print(LU)
+    print(pd.DataFrame(LU).to_string(index=False, header=False))
     
     # Check if LU equals A
     if np.allclose(LU, A_np):
-        print("\nVerification successful: LU = A")
+        print("\nKiểm tra thành công: LU = A")
     else:
-        print("\nVerification failed: LU ≠ A")
-#Original matrix Ax=B
-A = input_matrix('LU_input_A.txt', convert_fractions=False)
+        print("\nKiểm tra thất bại: LU ≠ A")
+if __name__ == "__main__":
+    output_path = str(__dir__ / "pp3_LU_Decomposition_result.txt")
+    with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+        A = input_matrix(str(__dir__ / 'LU_input_A.txt'), convert_fractions=False)
 
-print("\nMatrix A:"); output_matrix(A)
-if A is not None:
-    L, U = lu_decomposition(A)
-    verify_lu_decomposition(A, L, U)
+        print("\nMa trận A:"); output_matrix(A)
+        if A is not None:
+            L, U = lu_decomposition(A)
+            verify_lu_decomposition(A, L, U)
+    print(f"Đã ghi kết quả vào {output_path}")
 
 
 

@@ -15,13 +15,14 @@
 # Input: Đọc từ PWDF_input_A.txt, PWDF_input_A3.txt
 # Cách dùng: python pp2_PowerDeflation.py
 # =============================================================================
+from pathlib import Path
+import contextlib
 from fractions import Fraction
 from typing import List, Tuple, Union
 import numpy as np
 import pandas as pd
-import os
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+__dir__ = Path(__file__).parent.resolve()
 
 pd.set_option('display.precision', 12)  # Increase decimal precision
 pd.set_option('display.width', 300)     # Wider display
@@ -33,7 +34,7 @@ def input_matrix(filename, convert_fractions=False):
     """
     matrix = []
 
-    with open(os.path.join(SCRIPT_DIR, filename), 'r') as f:
+    with open(str(__dir__ / filename), 'r') as f:
         for line in f:
             tokens = line.strip().split()
             if not tokens:
@@ -53,7 +54,7 @@ def input_matrix(filename, convert_fractions=False):
             
     dtype = float if convert_fractions else object
     return np.array(matrix, dtype=dtype)
-def output_matrix(X: np.ndarray, precision: int = 12):
+def output_matrix(X: np.ndarray, precision: int = 7):
     """
     Prints a NumPy array (vector or matrix) in a clean tabular format using pandas.
     
@@ -95,7 +96,7 @@ def deflate_once(A: np.ndarray, lam: float, v: np.ndarray, x0_left: np.ndarray, 
     # Step 2: normalize w so that w^T v = 1
     scale = w.dot(v)
     if abs(scale) < 1e-12:
-        raise ValueError("Left and right eigenvectors nearly orthogonal; cannot deflate.")
+        raise ValueError("Vector riêng trái và phải gần như trực giao; không thể xuống thang.")
     w = w / scale
     # Step 3: rank-1 deflation
     return A - lam * np.outer(v, w)
@@ -104,8 +105,8 @@ def power_method(A,
                  tol=1e-6,
                  max_iter=1000,
                  norm_ord=2,
-                 precision=12,
-                 display=True):
+                  precision=7,
+                  display=True):
     """
     Power Method for finding the dominant eigenvalue and eigenvector of A.
     Displays each iteration in a pandas DataFrame using the specified norm.
@@ -145,7 +146,7 @@ def power_method(A,
         # Estimate eigenvalue via the chosen norm
         lambda_new = np.linalg.norm(y, ord=norm_ord)
         if lambda_new == 0:
-            raise ZeroDivisionError("Norm of A*x is zero; unable to continue.")
+            raise ZeroDivisionError("Chuẩn của A*x bằng 0; không thể tiếp tục.")
         # Normalize to get next eigenvector estimate
         x_new = y / lambda_new
 
@@ -161,18 +162,17 @@ def power_method(A,
         eigenvalue = lambda_new
 
     # Build and display DataFrame
-    cols = ['Iteration'] + [f'y{i+1}' for i in range(n)] + ['lambda'] + [f'x{i+1}' for i in range(n)]
+    cols = ['Lần lặp'] + [f'y{i+1}' for i in range(n)] + ['lambda'] + [f'x{i+1}' for i in range(n)]
     df = pd.DataFrame(history, columns=cols)
     if display:
-        from tabulate import tabulate
         if len(df) > 6:
             df_show = pd.concat([df.head(3), df.tail(3)])
-            print(tabulate(df_show, headers='keys', tablefmt='grid', showindex=False,
-                           floatfmt=f".{precision}f"))
-            print("    ... (omitted", len(df) - 6, "iterations) ...")
+            print(df_show.to_string(index=False,
+                                    float_format=lambda x: f"{x:.{precision}f}"))
+            print("    ... (bỏ qua", len(df) - 6, "lần lặp) ...")
         else:
-            print(tabulate(df, headers='keys', tablefmt='grid', showindex=False,
-                           floatfmt=f".{precision}f"))
+            print(df.to_string(index=False,
+                               float_format=lambda x: f"{x:.{precision}f}"))
 
     return eigenvalue, x_new
 
@@ -182,7 +182,7 @@ def power_method_case2(
     tol=1e-6,
     max_iter=1000,
     norm_ord=np.inf,
-    precision=12,
+    precision=7,
     display=True
 ):
     """
@@ -250,18 +250,17 @@ def power_method_case2(
         eigen2 = lambda2_new
 
     # Display results in pandas
-    cols = ['Iteration'] + [f'y{i+1}' for i in range(n)] + ['lambda^2'] + [f'x1_{i+1}' for i in range(n)] + [f'x2_{i+1}' for i in range(n)]
+    cols = ['Lần lặp'] + [f'y{i+1}' for i in range(n)] + ['lambda^2'] + [f'x1_{i+1}' for i in range(n)] + [f'x2_{i+1}' for i in range(n)]
     df = pd.DataFrame(history, columns=cols)
     if display:
-        from tabulate import tabulate
         if len(df) > 6:
             df_show = pd.concat([df.head(3), df.tail(3)])
-            print(tabulate(df_show, headers='keys', tablefmt='grid', showindex=False,
-                           floatfmt=f".{precision}f"))
-            print("    ... (omitted", len(df) - 6, "iterations) ...")
+            print(df_show.to_string(index=False,
+                                    float_format=lambda x: f"{x:.{precision}f}"))
+            print("    ... (bỏ qua", len(df) - 6, "lần lặp) ...")
         else:
-            print(tabulate(df, headers='keys', tablefmt='grid', showindex=False,
-                           floatfmt=f".{precision}f"))
+            print(df.to_string(index=False,
+                               float_format=lambda x: f"{x:.{precision}f}"))
 
     # Final eigenvalue
     lambda1_final = np.sqrt(eigen2)
@@ -290,7 +289,7 @@ def compute_all_eigenpairs(
 
     for k in range(n):
         # Determine which power-method to apply: always use case1 for real eigenvalues
-        print(f"Finding eigenpair {k+1}: matrix size {M.shape}")
+        print(f"Đang tìm cặp trị riêng {k+1}: kích thước ma trận {M.shape}")
         # Call power_method (case1) for new matrix M
         lam, v = power_method(
             M, y, tol=tol, max_iter=max_iter,
@@ -308,7 +307,7 @@ def compute_all_eigenpairs(
     eigs_sorted, vecs_sorted = zip(*pairs)
 
  # Display final results: eigenvalue and eigenvector on same line
-    print("All eigenvalues and eigenvectors (sorted):")
+    print("Tất cả trị riêng và vector riêng (sắp xếp):")
     for i, (lam, vec) in enumerate(zip(eigs_sorted, vecs_sorted), start=1):
         vec_str = ", ".join(f"{x:.{precision}f}" for x in vec)
         print(f"  λ{i} = {lam:.{precision}f}, v = [{vec_str}]")
@@ -320,7 +319,7 @@ def power_method_case3(
     tol: float = 1e-6,
     max_iter: int = 100,
     norm_ord: Union[int, float, str] = np.inf,
-    precision: int = 12,
+    precision: int = 7,
     display: bool = True
 ) -> (complex, complex, np.ndarray, np.ndarray):
     """
@@ -371,8 +370,8 @@ def power_method_case3(
             p, q = np.linalg.solve(M, b)
         except np.linalg.LinAlgError:
             raise RuntimeError(
-                f"Singular 2×2 system encountered at iteration m={m}; "
-                "choose a different pair of pivot indices or check A."
+                f"Hệ 2×2 suy biến tại lần lặp m={m}; "
+                "hãy chọn cặp chỉ số khác hoặc kiểm tra ma trận A."
             )
 
         # Record iteration data: [m, y_m, y_m1, y_m2, p, q]
@@ -408,15 +407,14 @@ def power_method_case3(
 
     # Print iteration history with specified precision
     if display:
-        from tabulate import tabulate
         if len(df) > 6:
             df_show = pd.concat([df.head(3), df.tail(3)])
-            print(tabulate(df_show, headers='keys', tablefmt='grid', showindex=False,
-                           floatfmt=f".{precision}f"))
-            print("    ... (omitted", len(df) - 6, "iterations) ...")
+            print(df_show.to_string(index=False,
+                                    float_format=lambda x: f"{x:.{precision}f}"))
+            print("    ... (bỏ qua", len(df) - 6, "lần lặp) ...")
         else:
-            print(tabulate(df, headers='keys', tablefmt='grid', showindex=False,
-                           floatfmt=f".{precision}f"))
+            print(df.to_string(index=False,
+                               float_format=lambda x: f"{x:.{precision}f}"))
 
     # Now solve the quadratic for eigenvalues
     # z^2 + p z + q = 0  =>  z = [-p ± sqrt(p^2 - 4q)]/2
@@ -602,19 +600,23 @@ def run_all_cases(A: np.ndarray, x0: np.ndarray,
     return results
 
 
-# ==== DEMO: Ma trận thực 5x5 (PWDF_input_A.txt) ====
-A = input_matrix('PWDF_input_A.txt', convert_fractions=False)
-x0 = np.array([1., 1., 1., 1., 1.])
-print("\nMa trận A (5x5 - trị riêng thực):")
-output_matrix(A, precision=4)
-run_all_cases(A, x0, precision=7)
+if __name__ == "__main__":
+    output_path = str(__dir__ / "pp2_PowerDeflation_result.txt")
+    with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+        # ==== DEMO: Ma trận thực 5x5 (PWDF_input_A.txt) ====
+        A = input_matrix('PWDF_input_A.txt', convert_fractions=False)
+        x0 = np.array([1., 1., 1., 1., 1.])
+        print("\nMa trận A (5x5 - trị riêng thực):")
+        output_matrix(A, precision=4)
+        run_all_cases(A, x0, precision=7)
 
-# ==== DEMO: Ma trận phức 4x4 (PWDF_input_A3.txt) ====
-A3 = input_matrix('PWDF_input_A3.txt', convert_fractions=False)
-x0_3 = np.array([-1., 1., 0., 0.])
-print("\n\nMa trận A3 (4x4 - trị riêng phức liên hợp):")
-output_matrix(A3, precision=4)
-run_all_cases(A3, x0_3, precision=7)
+        # ==== DEMO: Ma trận phức 4x4 (PWDF_input_A3.txt) ====
+        A3 = input_matrix('PWDF_input_A3.txt', convert_fractions=False)
+        x0_3 = np.array([-1., 1., 0., 0.])
+        print("\n\nMa trận A3 (4x4 - trị riêng phức liên hợp):")
+        output_matrix(A3, precision=4)
+        run_all_cases(A3, x0_3, precision=7)
+    print(f"Đã ghi kết quả vào {output_path}")
 
 
 

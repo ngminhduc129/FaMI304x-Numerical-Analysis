@@ -12,7 +12,12 @@
 #
 # Cách dùng: python pp4_Choleski.py
 # =============================================================================
+from pathlib import Path
 import numpy as np
+import pandas as pd
+import contextlib
+
+__dir__ = Path(__file__).parent.resolve()
 
 def read_matrix_from_file(filename):
     """
@@ -29,16 +34,16 @@ def read_matrix_from_file(filename):
         matrix = np.loadtxt(filename)
         
         # Display the matrix
-        print("Matrix read from file:")
-        print(matrix)
+        print("Ma trận đọc từ file:")
+        print(pd.DataFrame(matrix).to_string(index=False, header=False))
         
         return matrix
     
     except FileNotFoundError:
-        print(f"Error: File '{filename}' not found.")
+        print(f"Lỗi: Không tìm thấy file.")
         return None
     except Exception as e:
-        print(f"Error reading file: {str(e)}")
+        print(f"Lỗi đọc file: {str(e)}")
         return None
 def cholesky_decomposition(A):
     """
@@ -74,33 +79,24 @@ def verify_cholesky_decomposition(A, L):
     A (numpy.ndarray): Original matrix
     L (numpy.ndarray): Lower triangular matrix
     """
-    print("\nLower triangular matrix L:")
-    print(L)
-    print("\nUpper triangular matrix L^T:")
-    print(L.T)
+    print("\nMa trận tam giác dưới L:")
+    print(pd.DataFrame(L).to_string(index=False, header=False))
+    print("\nMa trận tam giác trên L^T:")
+    print(pd.DataFrame(L.T).to_string(index=False, header=False))
     
     # Multiply L and L^T
     LLT = np.dot(L, L.T)
     print("\nL × L^T:")
-    print(LLT)
+    print(pd.DataFrame(LLT).to_string(index=False, header=False))
     
-    print("\nOriginal matrix A:")
-    print(A)
+    print("\nMa trận gốc A:")
+    print(pd.DataFrame(A).to_string(index=False, header=False))
     
     # Check if L×L^T equals A
     if np.allclose(LLT, A):
-        print("\nVerification successful: L×L^T = A")
+        print("\nKiểm tra thành công: L×L^T = A")
     else:
-        print("\nVerification failed: L×L^T ≠ A")
-# Example usage
-A = read_matrix_from_file('CLSK_input_A.txt')
-if A is not None:
-    # Check if matrix is symmetric
-    if not np.allclose(A, A.T):
-        print("Error: Matrix must be symmetric for Cholesky decomposition")
-    else:
-        L = cholesky_decomposition(A)
-        verify_cholesky_decomposition(A, L)
+        print("\nKiểm tra thất bại: L×L^T ≠ A")
 def forward_substitution(L, b):
     n = len(L)
     y = np.zeros(n)
@@ -130,16 +126,23 @@ def solve_cholesky(A, b):
     
     return x, L
 
-# --- CHẠY THỬ VỚI MA TRẬN CỦA BẠN ---
-b = np.array([8.0, 39.0])
-
-x, L = solve_cholesky(A, b)
-
-print("Ma trận L:\n", L)
-print("\nNghiệm x của hệ phương trình:", x)
-
-# Kiểm tra lại kết quả Ax có bằng b không
-print("\nKiểm tra Ax:", np.dot(A, x))
+if __name__ == "__main__":
+    output_path = str(__dir__ / "pp4_Choleski_result.txt")
+    with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+        A = read_matrix_from_file(__dir__ / 'CLSK_input_A.txt')
+        if A is not None:
+            if not np.allclose(A, A.T):
+                print("Lỗi: Ma trận phải đối xứng để phân rã Cholesky")
+            else:
+                L = cholesky_decomposition(A)
+                verify_cholesky_decomposition(A, L)
+                b = np.array([8.0, 39.0])
+                x, L = solve_cholesky(A, b)
+                print("\nMa trận L:")
+                print(pd.DataFrame(L).to_string(index=False, header=False))
+                print("Nghiệm x của hệ phương trình:", x)
+                print("Kiểm tra Ax:", np.dot(A, x))
+    print(f"Đã ghi kết quả vào {output_path}")
 
 
 

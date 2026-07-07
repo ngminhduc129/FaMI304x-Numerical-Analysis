@@ -11,10 +11,14 @@
 # Input: Đọc từ file BLMT_input_A.txt
 # Cách dùng: python pp5_Vienquanh.py
 # =============================================================================
+from pathlib import Path
 from fractions import Fraction
 from typing import Tuple, Union
 import numpy as np
 import pandas as pd
+import contextlib
+
+__dir__ = Path(__file__).parent.resolve()
 
 pd.set_option('display.precision', 12)  # Increase decimal precision
 pd.set_option('display.width', 300)     # Wider display
@@ -120,7 +124,7 @@ def block_matrix_recursion(A: np.ndarray) -> np.ndarray:
         Bk[k-1, :k-1] = beta_row
         Bk[k-1, k-1] = b_kk
         B_prev = Bk
-        print(f"Size {k}:\n", B_prev, "\n")
+        print(f"Kích thước {k}:\n", B_prev, "\n")
     return B_prev
 def inverse_via_ata(A: np.ndarray) -> np.ndarray:
     """
@@ -130,13 +134,16 @@ def inverse_via_ata(A: np.ndarray) -> np.ndarray:
     M = A.T.dot(A)
     M_inv = block_matrix_recursion(M)
     return M_inv.dot(A.T)
-#Original matrix Ax=B
-A = input_matrix('BLMT_input_A.txt', convert_fractions=False)
+if __name__ == "__main__":
+    output_path = str(__dir__ / "pp5_Vienquanh_result.txt")
+    with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+        A = input_matrix(str(__dir__ / 'BLMT_input_A.txt'), convert_fractions=False)
 
-print("\nMatrix A:"); output_matrix(A)
-print("\nMatrix M = A^T * A:"); output_matrix(A.T.dot(A))
-A_inv = inverse_via_ata(A)
-print("Inverse of A result:\n", A_inv)
+        print("\nMa trận A:"); output_matrix(A)
+        print("\nMa trận M = A^T * A:"); output_matrix(A.T.dot(A))
+        A_inv = inverse_via_ata(A)
+        print("Kết quả nghịch đảo của A:\n", A_inv)
+    print(f"Đã ghi kết quả vào {output_path}")
 
 
 

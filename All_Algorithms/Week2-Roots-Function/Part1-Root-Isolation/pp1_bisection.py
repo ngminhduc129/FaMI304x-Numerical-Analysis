@@ -23,15 +23,19 @@
 import numpy as np
 import pandas as pd
 
-pd.set_option('display.precision', 15)  # Increase decimal precision
+pd.set_option('display.precision', 7)  # Độ chính xác hiển thị
 pd.set_option('display.width', 150)     # Wider display
 pd.set_option('display.max_columns', None)  # Show all column
+import contextlib
+from pathlib import Path
+
+__dir__ = Path(__file__).parent
 
 sign = lambda x: 1 if x > 0 else (-1 if x < 0 else 0)
 def bisection_iteration_v1 (f,a,b,n,rbl):
     # Error function
     if (f(a) * f(b) >= 0):
-        print("You have not assumed right a and b\n")
+        print("Bạn chưa chọn đúng a và b\n")
         return
 
     # Implementing Bisection Method
@@ -69,44 +73,16 @@ def bisection_iteration_v1 (f,a,b,n,rbl):
     print(df_results.to_string(index=False))
 
     if rbl == None:
-        print(f"The value of root is: {x}")
+        print(f"Giá trị nghiệm là: {x}")
     else:
         total_delta = delta + 0.5 * 10**(-rbl) #must calculate roundoff error
-        print(f"The value of root with {rbl} decimal point is: {round(x, rbl)}")
-        print(f"Relative error is: {total_delta}")
-f = lambda x: np.e**x - np.cos(2*x)
+        print(f"Giá trị nghiệm với {rbl} chữ số thập phân là: {round(x, rbl)}")
+        print(f"Sai số tương đối là: {total_delta}")
 
-a = -3
-b = -2
-
-n = 20
-rbl = 5
-
-bisection_iteration_v1 (f, a, b, n, rbl)
-f = lambda x: np.log(x) - 1 #approximate e
-
-a = 2
-b = 3
-
-eps = 0.5 * pow(10, -7) #epsilon should be small so that the root is accurate to 7 decimal places
-n = int(np.floor(np.log2((b-a)/eps)) + 1)
-rbl = 7
-
-bisection_iteration_v1 (f, a, b, n, rbl)
-f = lambda x: np.tan(x/4) - 1 #approximate pi
-
-a = 3
-b = 3.2
-
-eps = 0.5 * pow(10, -7)
-n = int(np.floor(np.log2((b-a)/eps)) + 1)
-rbl = 7
-
-bisection_iteration_v1 (f, a, b, n, rbl)
 def bisection_iteration_v2 (f,a,b,n,rbl):
     # Error function
     if (f(a) * f(b) >= 0):
-        print("You have not assumed right a and b\n")
+        print("Bạn chưa chọn đúng a và b\n")
         return
 
     # Implementing Bisection Method
@@ -143,24 +119,16 @@ def bisection_iteration_v2 (f,a,b,n,rbl):
     print(df_results.to_string(index=False))
 
     if rbl == None:
-        print(f"The value of root is: {x}")
+        print(f"Giá trị nghiệm là: {x}")
     else:
         total_delta = delta_x + 0.5 * 10**(-rbl) #must calculate roundoff error
-        print(f"The value of root with {rbl} decimal point is: {round(x, rbl)}")
-        print(f"Relative error is: {total_delta}")
-f = lambda x: np.e**x - np.cos(2*x)
+        print(f"Giá trị nghiệm với {rbl} chữ số thập phân là: {round(x, rbl)}")
+        print(f"Sai số tương đối là: {total_delta}")
 
-a = -3
-b = -2
-
-n = 30
-rbl = 5
-
-bisection_iteration_v2 (f, a, b, n, rbl)
 def bisection_recursion_absolute (f,a,b,eps):
     # Error function
     if (f(a) * f(b) >= 0):
-        print("You have not assumed right a and b\n")
+        print("Bạn chưa chọn đúng a và b\n")
         return
 
     # Implementing Bisection Method
@@ -203,27 +171,12 @@ def bisection_recursion_absolute (f,a,b,eps):
     df_results = pd.DataFrame(results)
     print(df_results.to_string(index=False))
 
-    print(f"The value of root with absolute error {eps} is: {x}")
-f = lambda x: 3*np.sin(x) + x**3 - 8*x**2 + 8*x + 1
+    print(f"Giá trị nghiệm với sai số tuyệt đối {eps} là: {x}")
 
-a = 6
-b = 7
-
-eps = 0.5 * pow(10, -7)
-
-bisection_recursion_absolute (f, a, b, eps)
-f = lambda x: x**5-17 #approximate 5th root of 17
-
-a = 1
-b = 2
-
-eps = 0.5 * pow(10, -6)
-
-bisection_recursion_absolute (f, a, b, eps)
 def bisection_recursion_relative (f,a,b,eta):
     # Error function
     if (f(a) * f(b) >= 0):
-        print("You have not assumed right a and b\n")
+        print("Bạn chưa chọn đúng a và b\n")
         return
 
     # Implementing Bisection Method
@@ -266,24 +219,82 @@ def bisection_recursion_relative (f,a,b,eta):
     df_results = pd.DataFrame(results)
     print(df_results.to_string(index=False))
 
-    print(f"The value of root with relative error {eta} is: {x}")
-f = lambda x: np.exp(x) - np.cos(2*x)
+    print(f"Giá trị nghiệm với sai số tương đối {eta} là: {x}")
 
-a = -3
-b = -2
+if __name__ == "__main__":
+    output_path = str(__dir__ / "pp1_bisection_result.txt")
+    with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+        f = lambda x: np.e**x - np.cos(2*x)
 
-eta = 0.5 * pow(10, -6)
+        a = -3
+        b = -2
 
-bisection_recursion_relative (f, a, b, eta)
-f = lambda x: x**5 - 3*x**3 + 2*x**2 - x + 5
+        n = 20
+        rbl = 5
 
-a = -3
-b = -2
+        bisection_iteration_v1 (f, a, b, n, rbl)
+        f = lambda x: np.log(x) - 1 #approximate e
 
-eta = 0.05 * pow(10, -2)
+        a = 2
+        b = 3
 
-bisection_recursion_relative (f, a, b, eta)
+        eps = 0.5 * pow(10, -7) #epsilon should be small so that the root is accurate to 7 decimal places
+        n = int(np.floor(np.log2((b-a)/eps)) + 1)
+        rbl = 7
 
+        bisection_iteration_v1 (f, a, b, n, rbl)
+        f = lambda x: np.tan(x/4) - 1 #approximate pi
 
+        a = 3
+        b = 3.2
 
+        eps = 0.5 * pow(10, -7)
+        n = int(np.floor(np.log2((b-a)/eps)) + 1)
+        rbl = 7
 
+        bisection_iteration_v1 (f, a, b, n, rbl)
+
+        f = lambda x: np.e**x - np.cos(2*x)
+
+        a = -3
+        b = -2
+
+        n = 30
+        rbl = 5
+
+        bisection_iteration_v2 (f, a, b, n, rbl)
+
+        f = lambda x: 3*np.sin(x) + x**3 - 8*x**2 + 8*x + 1
+
+        a = 6
+        b = 7
+
+        eps = 0.5 * pow(10, -7)
+
+        bisection_recursion_absolute (f, a, b, eps)
+        f = lambda x: x**5-17 #approximate 5th root of 17
+
+        a = 1
+        b = 2
+
+        eps = 0.5 * pow(10, -6)
+
+        bisection_recursion_absolute (f, a, b, eps)
+
+        f = lambda x: np.exp(x) - np.cos(2*x)
+
+        a = -3
+        b = -2
+
+        eta = 0.5 * pow(10, -6)
+
+        bisection_recursion_relative (f, a, b, eta)
+        f = lambda x: x**5 - 3*x**3 + 2*x**2 - x + 5
+
+        a = -3
+        b = -2
+
+        eta = 0.05 * pow(10, -2)
+
+        bisection_recursion_relative (f, a, b, eta)
+    print(f"Đã ghi kết quả vào {output_path}")

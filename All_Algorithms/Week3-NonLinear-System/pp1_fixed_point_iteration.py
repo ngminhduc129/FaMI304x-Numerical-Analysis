@@ -16,8 +16,11 @@
 # =============================================================================
 import numpy as np
 import pandas as pd
+import contextlib
+from pathlib import Path
+__dir__ = Path(__file__).parent.resolve()
 
-pd.set_option('display.precision', 15)  # Increase decimal precision
+pd.set_option('display.precision', 7)  # Độ chính xác hiển thị
 pd.set_option('display.width', 150)     # Wider display
 pd.set_option('display.max_columns', None)  # Show all column
 def fixed_point_recursion_absolute (initial_values, q, eps, *funcs, norm):
@@ -46,80 +49,12 @@ def fixed_point_recursion_absolute (initial_values, q, eps, *funcs, norm):
             break
         i += 1  # Increment the iteration counter
         
-    columns = ['Iteration'] + [f'x{j+1}' for j in range(n)] + [f'diff_x{j+1}' for j in range(n)] + ['total_diff']
+    columns = ['Lần lặp'] + [f'x{j+1}' for j in range(n)] + [f'sai_số_x{j+1}' for j in range(n)] + ['tổng_sai_số']
     df = pd.DataFrame(results, columns=columns)
     print(df.to_string(index=False))  # Print the DataFrame without the index
     
     return values  
-def g1(x, y, z):
-    return 1/3 * (np.cos(y*z) + 0.5)
 
-def g2(x, y, z):
-    return 1/9 * np.sqrt(x**2 + np.sin(z) + 1.06) - 0.1
-
-def g3(x, y, z):
-    return -1/20 * np.exp(-x*y) - 9.1389/20
-
-# Store g functions
-def store_g_funcs(*g_funcs):
-    return g_funcs
-
-g_funcs = store_g_funcs(g1, g2, g3)
-
-# Initial guess
-initial_values = [0, 0, 0]
-eps = 0.5 * 1e-7
-q = 0.56 #column-norm
-
-# Perform fixed-point iteration
-solution = fixed_point_recursion_absolute(initial_values, q, eps, *g_funcs, norm=1)
-print("Approximate solution:", solution)
-def g1(x, y, z):
-    return 1/3 * (np.cos(y*z)) + 1/6
-
-def g2(x, y, z):
-    return -1/9 * np.sqrt(x**2 + np.sin(z) + 1.06) - 0.1
-
-def g3(x, y, z):
-    return -1/20 * np.exp(-x*y) -(10*np.pi-3)/60
-
-# Store g functions
-def store_g_funcs(*g_funcs):
-    return g_funcs
-
-g_funcs = store_g_funcs(g1, g2, g3)
-
-# Initial guess
-initial_values = [0, 0, 0]
-eps = 1e-6
-q = 0.416 #column-norm
-
-# Perform fixed-point iteration
-solution = fixed_point_recursion_absolute(initial_values, q, eps, *g_funcs, norm=1)
-print("Approximate solution:", solution)
-def g1(x, y, z):
-    return (13 - y**2 + 1.5 * z**2) / 15
-
-def g2(x, y, z):
-    return (11 + z - x**2) / 10
-
-def g3(x, y, z):
-    return (20 + y**2) / 30
-
-# Store g functions
-def store_g_funcs(*g_funcs):
-    return g_funcs
-
-g_funcs = store_g_funcs(g1, g2, g3)
-
-# Initial guess
-initial_values = [0, 0, 0]
-eps = 1 * 1e-6
-q = 0.425 #column-norm
-
-# Perform fixed-point iteration
-solution = fixed_point_recursion_absolute(initial_values, q, eps, *g_funcs, norm=1)
-print("Approximate solution:", solution)
 def fixed_point_recursion_relative (initial_values, q, eta, *funcs, norm):
     n = len(initial_values)
     values = np.array(initial_values)
@@ -156,32 +91,102 @@ def fixed_point_recursion_relative (initial_values, q, eta, *funcs, norm):
 
         i += 1  # Increment the iteration counter 
     
-    columns = ['Iteration'] + [f'x{j+1}' for j in range(n)] + [f'diff_x{j+1}' for j in range(n)] + ['total_diff'] + ['relative_diff']
+    columns = ['Lần lặp'] + [f'x{j+1}' for j in range(n)] + [f'sai_số_x{j+1}' for j in range(n)] + ['tổng_sai_số'] + ['sai_số_tương_đối']
     df = pd.DataFrame(results, columns=columns)
     print(df.to_string(index=False))  # Print the DataFrame without the index
     
     return values
-def g1(x, y):
-    return 1/3 * np.sin(x*y)
 
-def g2(x, y):
-    return 1/4 * np.cos(x**2+y**2)
+if __name__ == "__main__":
+    output_path = str(__dir__ / "pp1_fixed_point_iteration_result.txt")
+    with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+        def g1(x, y, z):
+            return 1/3 * (np.cos(y*z) + 0.5)
 
-# Store g functions
-def store_g_funcs(*g_funcs):
-    return g_funcs
+        def g2(x, y, z):
+            return 1/9 * np.sqrt(x**2 + np.sin(z) + 1.06) - 0.1
 
-g_funcs = store_g_funcs(g1, g2)
+        def g3(x, y, z):
+            return -1/20 * np.exp(-x*y) - 9.1389/20
 
-# Initial guess
-initial_values = [1, 1]
-eta = 1 * 1e-4
-q = 1/3 * np.cos(1) + 1/2 * np.sin(2) #column-norm
+        # Store g functions
+        def store_g_funcs(*g_funcs):
+            return g_funcs
 
-# Perform fixed-point iteration
-solution = fixed_point_recursion_relative (initial_values, q, eta, *g_funcs, norm=1)
-print("Approximate solution:", solution)
+        g_funcs = store_g_funcs(g1, g2, g3)
 
+        # Initial guess
+        initial_values = [0, 0, 0]
+        eps = 0.5 * 1e-7
+        q = 0.56 #column-norm
 
+        # Perform fixed-point iteration
+        solution = fixed_point_recursion_absolute(initial_values, q, eps, *g_funcs, norm=1)
+        print("Nghiệm xấp xỉ:", solution)
+        def g1(x, y, z):
+            return 1/3 * (np.cos(y*z)) + 1/6
 
+        def g2(x, y, z):
+            return -1/9 * np.sqrt(x**2 + np.sin(z) + 1.06) - 0.1
 
+        def g3(x, y, z):
+            return -1/20 * np.exp(-x*y) -(10*np.pi-3)/60
+
+        # Store g functions
+        def store_g_funcs(*g_funcs):
+            return g_funcs
+
+        g_funcs = store_g_funcs(g1, g2, g3)
+
+        # Initial guess
+        initial_values = [0, 0, 0]
+        eps = 1e-6
+        q = 0.416 #column-norm
+
+        # Perform fixed-point iteration
+        solution = fixed_point_recursion_absolute(initial_values, q, eps, *g_funcs, norm=1)
+        print("Nghiệm xấp xỉ:", solution)
+        def g1(x, y, z):
+            return (13 - y**2 + 1.5 * z**2) / 15
+
+        def g2(x, y, z):
+            return (11 + z - x**2) / 10
+
+        def g3(x, y, z):
+            return (20 + y**2) / 30
+
+        # Store g functions
+        def store_g_funcs(*g_funcs):
+            return g_funcs
+
+        g_funcs = store_g_funcs(g1, g2, g3)
+
+        # Initial guess
+        initial_values = [0, 0, 0]
+        eps = 1 * 1e-6
+        q = 0.425 #column-norm
+
+        # Perform fixed-point iteration
+        solution = fixed_point_recursion_absolute(initial_values, q, eps, *g_funcs, norm=1)
+        print("Nghiệm xấp xỉ:", solution)
+        def g1(x, y):
+            return 1/3 * np.sin(x*y)
+
+        def g2(x, y):
+            return 1/4 * np.cos(x**2+y**2)
+
+        # Store g functions
+        def store_g_funcs(*g_funcs):
+            return g_funcs
+
+        g_funcs = store_g_funcs(g1, g2)
+
+        # Initial guess
+        initial_values = [1, 1]
+        eta = 1 * 1e-4
+        q = 1/3 * np.cos(1) + 1/2 * np.sin(2) #column-norm
+
+        # Perform fixed-point iteration
+        solution = fixed_point_recursion_relative (initial_values, q, eta, *g_funcs, norm=1)
+        print("Nghiệm xấp xỉ:", solution)
+    print(f"Đã ghi kết quả vào {output_path}")

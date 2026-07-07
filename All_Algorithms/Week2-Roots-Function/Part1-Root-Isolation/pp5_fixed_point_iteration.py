@@ -13,9 +13,14 @@
 import numpy as np
 import pandas as pd
 
-pd.set_option('display.precision', 15)  # Increase decimal precision
+pd.set_option('display.precision', 7)  # Độ chính xác hiển thị
 pd.set_option('display.width', 150)     # Wider display
 pd.set_option('display.max_columns', None)  # Show all column
+import contextlib
+from pathlib import Path
+
+__dir__ = Path(__file__).parent
+
 def fixed_point_iteration_v1 (phi, dphi, a, b, x_0, q, n, rbl):
     #Initial value
     x = x_0; results = [];
@@ -54,24 +59,12 @@ def fixed_point_iteration_v1 (phi, dphi, a, b, x_0, q, n, rbl):
     print(df_results.to_string(index=False))
 		
     if rbl == None:
-        print(f"The value of root is: {x}")
+        print(f"Giá trị nghiệm là: {x}")
     else:
         total_delta = delta + 0.5 * 10**(-rbl)
-        print(f"The value of root with {rbl} decimal point is: {round(x, rbl)}")
-        print(f"Relative error is: {total_delta}")
-f = lambda x: x**5 - 17*x + 2
-phi = lambda x: (x**5 + 2) / 17
-dphi = lambda x: 5*x**4 / 17
+        print(f"Giá trị nghiệm với {rbl} chữ số thập phân là: {round(x, rbl)}")
+        print(f"Sai số tương đối là: {total_delta}")
 
-a = 0
-b = 1
-x_0 = a
-q = max(np.abs(dphi(x)) for x in [a, b]) # Lipschitz constant (q<1)
-
-n = 15
-rbl = 9
-
-fixed_point_iteration_v1 (phi, dphi, a, b, x_0, q, n, rbl)
 def fixed_point_iteration_v2 (phi, dphi, a, b, x_0, q, n, rbl):
     #Initial value
     x = x_0; results = [];
@@ -106,24 +99,12 @@ def fixed_point_iteration_v2 (phi, dphi, a, b, x_0, q, n, rbl):
     print(df_results.to_string(index=False))
 		
     if rbl == None:
-        print(f"The value of root is: {x}")
+        print(f"Giá trị nghiệm là: {x}")
     else:
         total_delta = delta_x + 0.5 * 10**(-rbl)
-        print(f"The value of root with {rbl} decimal point is: {round(x, rbl)}")
-        print(f"Relative error is: {total_delta}")
-f = lambda x: x**5 - 17*x + 2
-phi = lambda x: (x**5 + 2) / 17
-dphi = lambda x: 5*x**4 / 17
+        print(f"Giá trị nghiệm với {rbl} chữ số thập phân là: {round(x, rbl)}")
+        print(f"Sai số tương đối là: {total_delta}")
 
-a = 0
-b = 1
-x_0 = a
-q = max(np.abs(dphi(x)) for x in [a, b]) # Lipschitz constant (q<1)
-
-n = 15
-rbl = 9
-
-fixed_point_iteration_v2 (phi, dphi, a, b, x_0, q, n, rbl)
 def fixed_point_recursion_absolute (f, phi, dphi, a, b, x_0, q, eps):
     #Initial value
     x = x_0; results = [];
@@ -163,31 +144,8 @@ def fixed_point_recursion_absolute (f, phi, dphi, a, b, x_0, q, eps):
     df_results = pd.DataFrame(results)
     print(df_results.to_string(index=False))
 		
-    print(f"The value of root with absolute error {eps} is: {x}")
-f = lambda x: (1.4)**x - x
-phi = lambda x: (1.4)**x
-dphi = lambda x: (1.4)**x * np.log(1.4)
+    print(f"Giá trị nghiệm với sai số tuyệt đối {eps} là: {x}")
 
-a = 1
-b = 2
-x_0 = b
-q = dphi(2)
-
-eps = 0.5 * 10**(-7)
-
-fixed_point_recursion_absolute (f, phi, dphi, a, b, x_0, q, eps)
-f = lambda x: x**5 - 17*x + 2
-phi = lambda x: -pow(2 - 17*x , 0.2)
-dphi = lambda x: 0.2 * 17 * pow(2 - 17*x, -0.8)
-
-a = -3
-b = -2
-x_0 = b
-q = max(np.abs(dphi(x)) for x in [a, b]) # Lipschitz constant (q<1)
-
-eps = 10**(-8)
-
-fixed_point_recursion_absolute (f, phi, dphi, a, b, x_0, q, eps)
 def fixed_point_recursion_relative (f, phi, dphi, a, b, x_0, q, eta):
     #Initial value
     x = x_0; results = [];
@@ -227,20 +185,74 @@ def fixed_point_recursion_relative (f, phi, dphi, a, b, x_0, q, eta):
     df_results = pd.DataFrame(results)
     print(df_results.to_string(index=False))
 		
-    print(f"The value of root with relative error {eps} is: {x}")
-f = lambda x: x**2 + 3*x - 1
-phi = lambda x: 1/(x+3)
-dphi = lambda x: -1/(x+3)**2
+    print(f"Giá trị nghiệm với sai số tương đối {eps} là: {x}")
 
-a = 0
-b = 1
-x_0 = a
-q = max(np.abs(dphi(x)) for x in [a, b]) # Lipschitz constant (q<1)
+if __name__ == "__main__":
+    output_path = str(__dir__ / "pp5_fixed_point_iteration_result.txt")
+    with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+        f = lambda x: x**5 - 17*x + 2
+        phi = lambda x: (x**5 + 2) / 17
+        dphi = lambda x: 5*x**4 / 17
 
-eta = 5 * 10**(-9)
+        a = 0
+        b = 1
+        x_0 = a
+        q = max(np.abs(dphi(x)) for x in [a, b]) # Lipschitz constant (q<1)
 
-fixed_point_recursion_relative (f, phi, dphi, a, b, x_0, q, eta)
+        n = 15
+        rbl = 9
 
+        fixed_point_iteration_v1 (phi, dphi, a, b, x_0, q, n, rbl)
 
+        f = lambda x: x**5 - 17*x + 2
+        phi = lambda x: (x**5 + 2) / 17
+        dphi = lambda x: 5*x**4 / 17
 
+        a = 0
+        b = 1
+        x_0 = a
+        q = max(np.abs(dphi(x)) for x in [a, b]) # Lipschitz constant (q<1)
 
+        n = 15
+        rbl = 9
+
+        fixed_point_iteration_v2 (phi, dphi, a, b, x_0, q, n, rbl)
+
+        f = lambda x: (1.4)**x - x
+        phi = lambda x: (1.4)**x
+        dphi = lambda x: (1.4)**x * np.log(1.4)
+
+        a = 1
+        b = 2
+        x_0 = b
+        q = dphi(2)
+
+        eps = 0.5 * 10**(-7)
+
+        fixed_point_recursion_absolute (f, phi, dphi, a, b, x_0, q, eps)
+        f = lambda x: x**5 - 17*x + 2
+        phi = lambda x: -pow(2 - 17*x , 0.2)
+        dphi = lambda x: 0.2 * 17 * pow(2 - 17*x, -0.8)
+
+        a = -3
+        b = -2
+        x_0 = b
+        q = max(np.abs(dphi(x)) for x in [a, b]) # Lipschitz constant (q<1)
+
+        eps = 10**(-8)
+
+        fixed_point_recursion_absolute (f, phi, dphi, a, b, x_0, q, eps)
+
+        f = lambda x: x**2 + 3*x - 1
+        phi = lambda x: 1/(x+3)
+        dphi = lambda x: -1/(x+3)**2
+
+        a = 0
+        b = 1
+        x_0 = a
+        q = max(np.abs(dphi(x)) for x in [a, b]) # Lipschitz constant (q<1)
+
+        eta = 5 * 10**(-9)
+
+        fixed_point_recursion_relative (f, phi, dphi, a, b, x_0, q, eta)
+    print(f"Đã ghi kết quả vào {output_path}")

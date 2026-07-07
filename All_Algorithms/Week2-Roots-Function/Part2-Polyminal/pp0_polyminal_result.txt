@@ -1,0 +1,16 @@
+Bán kính phức cho nghiệm: -24.0 -> 24.0
+Giá trị hàm tại mỗi đầu của bán kính phức: -12119.0 và 15529.0
+
+
+Bán kính dưới cho nghiệm thực: -4.0
+Giá trị hàm tại bán kính dưới: -39.0
+
+
+Bán kính trên cho nghiệm thực: 3.8438669798515654
+Giá trị hàm tại bán kính trên: 78.12027921320447
+Cực tiểu địa phương: ['1.798889041066704e-07']
+Giá trị hàm tại cực tiểu: ['-22.999999999999904']
+
+
+Cực đại địa phương: ['-2.0000002627293925']
+Giá trị hàm tại cực đại: ['-19.000000000000206']
