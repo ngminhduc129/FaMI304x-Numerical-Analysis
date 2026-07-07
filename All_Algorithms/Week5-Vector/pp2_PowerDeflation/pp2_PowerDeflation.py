@@ -603,19 +603,11 @@ def run_all_cases(A: np.ndarray, x0: np.ndarray,
 if __name__ == "__main__":
     output_path = str(__dir__ / "pp2_PowerDeflation_result.txt")
     with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
-        # ==== DEMO: Ma trận thực 5x5 (PWDF_input_A.txt) ====
-        A = input_matrix('PWDF_input_A.txt', convert_fractions=False)
-        x0 = np.array([1., 1., 1., 1., 1.])
-        print("\nMa trận A (5x5 - trị riêng thực):")
+        A = input_matrix('input.txt', convert_fractions=False)
+        x0 = np.ones(A.shape[0], dtype=float)
+        print(f"\nMa trận A ({A.shape[0]}x{A.shape[1]}):")
         output_matrix(A, precision=4)
         run_all_cases(A, x0, precision=7)
-
-        # ==== DEMO: Ma trận phức 4x4 (PWDF_input_A3.txt) ====
-        A3 = input_matrix('PWDF_input_A3.txt', convert_fractions=False)
-        x0_3 = np.array([-1., 1., 0., 0.])
-        print("\n\nMa trận A3 (4x4 - trị riêng phức liên hợp):")
-        output_matrix(A3, precision=4)
-        run_all_cases(A3, x0_3, precision=7)
     print(f"Đã ghi kết quả vào {output_path}")
 
 

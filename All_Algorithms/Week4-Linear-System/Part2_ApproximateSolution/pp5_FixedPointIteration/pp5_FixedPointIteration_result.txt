@@ -1,0 +1,39 @@
+
+Ma trận A:
+10.0 4.0  -9.0
+ 2.0 8.0   5.0
+-1.0 1.0 -20.0
+Chuẩn cột:  1.3
+Chuẩn hàng:  0.7
+Chuẩn 2:  23.734177840022088
+Chuẩn max:  60.0
+
+Ma trận B:
+ 2.0
+-1.0
+ 4.0
+
+Giá trị khởi tạo:
+ 2.0
+-1.0
+ 4.0
+new_eps: -0.000000970588
+               x1        x2        x3  total_diff
+Lần lặp                                          
+0             0.0       2.0      -1.0         4.0
+1           -18.0      15.0     -79.0       119.0
+2           593.0    -312.0    1617.0      2634.0
+3         -9869.0    6774.0  -33241.0     52406.0
+4        227577.0 -131752.0  681467.0   1090680.0
+...           ...       ...       ...         ...
+996           NaN       NaN       NaN         NaN
+997           NaN       NaN       NaN         NaN
+998           NaN       NaN       NaN         NaN
+999           NaN       NaN       NaN         NaN
+1000          NaN       NaN       NaN         NaN
+
+[1001 rows x 4 columns]
+Nghiệm xấp xỉ:
+x1   NaN
+x2   NaN
+x3   NaN

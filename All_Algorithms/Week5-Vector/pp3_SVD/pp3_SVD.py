@@ -252,6 +252,7 @@ if __name__ == "__main__":
         print_matrix(S)
         print("--- V^T cuối cùng ---")
         print_matrix(Vt)
+        print('\n')
         U, S, Vt = compute_svd_2(A_df, tol=1e-9)
         print("--- U cuối cùng ---")
         print_matrix(U)

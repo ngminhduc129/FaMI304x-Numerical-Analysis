@@ -38,6 +38,7 @@ def input_matrix(filename, convert_fractions=False):
 
             row = []
             for token in tokens:
+                token = token.replace('\u2212', '-')
                 if '/' in token:
                     # convert fractions if any includes fraction sign
                     val = Fraction(token)
@@ -48,8 +49,7 @@ def input_matrix(filename, convert_fractions=False):
 
             matrix.append(row)
             
-    dtype = float if convert_fractions else object
-    return np.array(matrix, dtype=dtype)
+    return np.array(matrix, dtype=float)
 
 def output_matrix(X: np.ndarray, precision: int = 12):
     """
@@ -112,7 +112,8 @@ def fixed_point_gauss_seidel(
     x0: Union[np.ndarray, list],
     domiType: int,
     eps: float,
-    eta: float
+    eta: float,
+    max_iter: int = 1000
 ) -> pd.DataFrame:
     """
     Performs Gauss–Seidel fixed-point iteration for row-dominant systems.
@@ -147,7 +148,9 @@ def fixed_point_gauss_seidel(
     row_L = np.sum(np.abs(L), axis=1)
     row_U = np.sum(np.abs(U), axis=1)
     ratios = row_L / (1 - row_U)
-    q = np.max(ratios)
+    q = np.nanmax(ratios)
+    if not np.isfinite(q):
+        q = 0.99
     
     #Compute s
     s=0
@@ -162,7 +165,9 @@ def fixed_point_gauss_seidel(
     errors = [np.nan]
 
     # Iterative updates
+    it = 0
     while True:
+        it += 1
         x_new = np.zeros_like(x_old)
         for k in range(n):
             x_new[k] = (L[k].dot(x_new)) + (U[k].dot(x_old)) + D[k]
@@ -178,6 +183,9 @@ def fixed_point_gauss_seidel(
 
         if err <= tol:
             break
+        if it >= max_iter:
+            print(f"⚠️ Gauss-Seidel không hội tụ sau {max_iter} lần lặp")
+            break
         
     # Prepare DataFrame
     cols = [f"x{i+1}" for i in range(n)]
@@ -186,41 +194,34 @@ def fixed_point_gauss_seidel(
     df.index.name = "Lần lặp"
     return df
 if __name__ == "__main__":
+    max_iter_input = input("Nhập số lần lặp tối đa (Enter = 1000): ").strip().strip('\ufeff')
+    max_iter = int(max_iter_input) if max_iter_input else 1000
+
     output_path = str(__dir__ / "pp7_Seidel_result.txt")
     with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
-        #Original matrix Ax=B
-        A = input_matrix('GS_input_A1.txt', convert_fractions=False)
-        B = input_matrix('GS_input_B1.txt', convert_fractions=False) #remove flatten if B is multi-column matrix
+        A = input_matrix(str(__dir__ / 'GS_input_A1.txt'), convert_fractions=False)
+        B = input_matrix(str(__dir__ / 'GS_input_B1.txt'), convert_fractions=False)
 
         print("\nMa trận A:"); output_matrix(A)
         print("\nKiểm tra chéo trội của A:", check_dominance(A));
         print("\nMa trận B:"); output_matrix(B)
-        #Convert to recursion form x_new = Cx+D
-        C, D = convert_to_iteration(A, B)
+        C, D = convert_to_iteration(A, B.flatten())
 
-        print("\nMa trận C:"); output_matrix(C)
-        print("\nMa trận D:"); output_matrix(D)
-        C = input_matrix(str(__dir__ / 'GS_input_A1.txt'), convert_fractions=False)
-        D = input_matrix(str(__dir__ / 'GS_input_B1.txt'), convert_fractions=False) #remove flatten if B is multi-column matrix
-
-        print("\nMa trận C:"); output_matrix(C);
-        print("\nKiểm tra chéo trội của C:", check_dominance(C));
-        print("\nMa trận D:"); output_matrix(D);
-        #Calculate the result
-        x0 = np.array([0,0,0,0,0]) #initial value
+        x0 = np.zeros(C.shape[0])
         domiType = check_dominance(C)
         eps = 1e-10
         eta = None
 
-        print("\nMa trận C:"); output_matrix(C);
-        print("\nKiểm tra chéo trội của C:", check_dominance(C));
-        print("\nMa trận D:"); output_matrix(D);
-        df_history = fixed_point_gauss_seidel(C, D, x0, domiType, eps, eta)
-        print(df_history.to_string(float_format="{: .4f}".format))
-
-        solution_series = df_history.filter(regex=r'^x\d+$').iloc[-1]
-        print("Nghiệm xấp xỉ:"),
-        print(solution_series.to_string())
+        try:
+            df_history = fixed_point_gauss_seidel(C, D, x0, domiType, eps, eta, max_iter=max_iter)
+        except Exception as e:
+            print(f"❌ Gauss-Seidel thất bại: {e}")
+            df_history = pd.DataFrame()
+        if not df_history.empty:
+            print(df_history.to_string(float_format="{: .4f}".format))
+            solution_series = df_history.filter(regex=r'^x\d+$').iloc[-1]
+            print("Nghiệm xấp xỉ:"),
+            print(solution_series.to_string())
     print(f"Đã ghi kết quả vào {output_path}")
 def convert_to_iteration_2(A: np.ndarray, 
                            B: np.ndarray, 
@@ -267,11 +268,7 @@ def fixed_point_gauss_seidel_2(
     if (eps is None) == (eta is None):
         raise ValueError("Specify exactly one of eps (exact) or eta (relative)")
     
-    # Check dominance type
-    if domiType not in (2, 3):
-        raise ValueError("domiType must be 2 for column-dominant systems")
-    else:
-        vec_norm = lambda x: np.sum(np.abs(x))
+    vec_norm = lambda x: np.sum(np.abs(x))
 
     # Split C into strict lower (L) and strict upper (U) parts
     n = C.shape[0]
@@ -282,7 +279,9 @@ def fixed_point_gauss_seidel_2(
     col_L = np.sum(np.abs(L), axis=0)
     col_U = np.sum(np.abs(U), axis=0)
     ratios = col_U / (1 - col_L)
-    q = np.max(ratios)
+    q = np.nanmax(ratios)
+    if not np.isfinite(q):
+        q = 0.99
 
     # Compute s = max_col_k (sum|L[k])
     s = np.max(col_L)
@@ -299,7 +298,9 @@ def fixed_point_gauss_seidel_2(
     errors = [np.nan]
     
     # Iterative updates
+    it = 0
     while True:
+        it += 1
         y_new = y_old.copy()
         for k in range(n):
             y_new[k] = L[k].dot(y_new) + U[k].dot(y_old) + D[k]
@@ -317,6 +318,9 @@ def fixed_point_gauss_seidel_2(
 
         if err <= tol:
             break
+        if it >= 1000:
+            print(f"Gauss-Seidel_2 không hội tụ sau 1000 lần lặp")
+            break
             
     # Prepare DataFrame
     df = pd.DataFrame(history, columns=[f"y{i+1}" for i in range(n)] + [f"x{i+1}" for i in range(n)])
@@ -324,35 +328,35 @@ def fixed_point_gauss_seidel_2(
     df.index.name = 'Lần lặp'
     return df
 
-if __name__ == "__main__":
-    output_path = str(__dir__ / "pp7_Seidel_result.txt")
-    with open(output_path, "a", encoding="utf-8") as f, contextlib.redirect_stdout(f):
-        #Original matrix Ax=B
-        A = input_matrix(str(__dir__ / 'GS_input_A1.txt'), convert_fractions=False)
-        B = input_matrix(str(__dir__ / 'GS_input_B1.txt'), convert_fractions=False) #remove flatten if B is multi-column matrix
+try:
+    if __name__ == "__main__":
+        output_path = str(__dir__ / "pp7_Seidel_result.txt")
+        with open(output_path, "a", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+            A = input_matrix(str(__dir__ / 'GS_input_A1.txt'), convert_fractions=False)
+            B = input_matrix(str(__dir__ / 'GS_input_B1.txt'), convert_fractions=False).flatten()
 
-        print("\nMa trận A:"); output_matrix(A)
-        print("\nKiểm tra chéo trội của A:", check_dominance(A));
-        print("\nMa trận B:"); output_matrix(B)
-        #Convert to recursion form x_new = Cx+D
-        T, C, D = convert_to_iteration_2(A, B)
+            print("\nMa trận A:"); output_matrix(A)
+            print("\nKiểm tra chéo trội của A:", check_dominance(A));
+            print("\nMa trận B:"); output_matrix(B)
+            T, C, D = convert_to_iteration_2(A, B)
 
-        print("\nMa trận C:"); output_matrix(C)
-        print("\nMa trận D:"); output_matrix(D)
-        print("\nMa trận T:"); output_matrix(T)
-        #Calculate the result
-        domiType = check_dominance(A)
-        x0 = [1,1,1,1,1,1,1] #initial value
-        eps = 1e-6
-        eta = None
+            print("\nMa trận C:"); output_matrix(C)
+            print("\nMa trận D:"); output_matrix(D)
+            print("\nMa trận T:"); output_matrix(T)
+            domiType = check_dominance(A)
+            x0 = np.ones(A.shape[0])
+            eps = 1e-6
+            eta = None
 
-        df_history = fixed_point_gauss_seidel_2(T, C, D, x0, domiType, eps, eta)
-        print(df_history)
+            df_history = fixed_point_gauss_seidel_2(T, C, D, x0, domiType, eps, eta)
+            print(df_history)
 
-        solution_series = df_history.filter(regex=r'^x\d+$').iloc[-1]
-        print("Nghiệm xấp xỉ:"),
-        print(solution_series.to_string())
-    print(f"Đã ghi kết quả vào {output_path}")
+            solution_series = df_history.filter(regex=r'^x\d+$').iloc[-1]
+            print("Nghiệm xấp xỉ:"),
+            print(solution_series.to_string())
+        print(f"Đã ghi kết quả vào {output_path}")
+except Exception as e:
+    print(f"❌ Block 2: {e}")
 
 
 

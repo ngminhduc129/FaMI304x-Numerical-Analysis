@@ -9,7 +9,7 @@
 #   convert_to_iteration(A, B)             - đưa về dạng lặp
 #   fixed_point_matrix_iteration_2(T,C,D,x0,domiType,eps,eta)
 #
-# Input: Đọc từ JCB_input_A1.txt, JCB_input_B1.txt
+# Input: Đọc từ JCB_input_A.txt, JCB_input_B.txt
 # Cách dùng: python pp6_Jacobi.py
 # =============================================================================
 from fractions import Fraction
@@ -17,10 +17,11 @@ from typing import Tuple, Union
 from pathlib import Path
 import numpy as np
 import pandas as pd
+import contextlib
 
 __dir__ = Path(__file__).parent.resolve()
-INPUT_A = str(__dir__ / 'JCB_input_A1.txt')
-INPUT_B = str(__dir__ / 'JCB_input_B1.txt')
+INPUT_A = str(__dir__ / 'JCB_input_A.txt')
+INPUT_B = str(__dir__ / 'JCB_input_B.txt')
 
 k = 4  # số lần lặp tối đa
 
@@ -178,26 +179,28 @@ def fixed_point_matrix_iteration(
     df.index.name = "Lần lặp"
     return df
 #Original matrix Ax=B
-A = input_matrix(INPUT_A, convert_fractions=False)
-B = input_matrix(INPUT_B, convert_fractions=False).flatten()
+output_path = str(__dir__ / "pp6_Jacobi_result.txt")
+with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+    A = input_matrix(INPUT_A, convert_fractions=False)
+    B = input_matrix(INPUT_B, convert_fractions=False).flatten()
 
-print("\nMa trận A:"); output_matrix(A)
-print("\nKiểm tra chéo trội của A:", check_dominance(A));
-print("\nMa trận B:"); output_matrix(B)
+    print("\nMa trận A:"); output_matrix(A)
+    print("\nKiểm tra chéo trội của A:", check_dominance(A));
+    print("\nMa trận B:"); output_matrix(B)
 
-domiType = check_dominance(A)
+    domiType = check_dominance(A)
 
-if domiType in (1, 3):
-    print("\n=== Trường hợp chéo trội hàng ===")
-    C, D = convert_to_iteration(A, B)
-    print("\nMa trận C:"); output_matrix(C)
-    print("\nMa trận D:"); output_matrix(D)
-    x0 = np.zeros(A.shape[0])
-    df_history = fixed_point_matrix_iteration(A, C, D, x0, domiType, eps=None, eta=1e-6, max_iter=k)
-    print(df_history)
-    solution_series = df_history.filter(regex=r'^x\d+$').iloc[-1]
-    print("Nghiệm xấp xỉ:"),
-    print(solution_series.to_string())
+    if domiType in (1, 3):
+        print("\n=== Trường hợp chéo trội hàng ===")
+        C, D = convert_to_iteration(A, B)
+        print("\nMa trận C:"); output_matrix(C)
+        print("\nMa trận D:"); output_matrix(D)
+        x0 = np.zeros(A.shape[0])
+        df_history = fixed_point_matrix_iteration(A, C, D, x0, domiType, eps=None, eta=1e-6, max_iter=k)
+        print(df_history)
+        solution_series = df_history.filter(regex=r'^x\d+$').iloc[-1]
+        print("Nghiệm xấp xỉ:"),
+        print(solution_series.to_string())
 def convert_to_iteration_2(A: np.ndarray, 
                            B: np.ndarray, 
                           ) -> Tuple[np.ndarray, np.ndarray]:
@@ -297,27 +300,28 @@ def fixed_point_matrix_iteration_2(
     df.index.name = "Lần lặp"
     return df
 #Original matrix Ax=B
-A = input_matrix(INPUT_A, convert_fractions=False)
-B = input_matrix(INPUT_B, convert_fractions=False).flatten()
+with open(output_path, "a", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+    A = input_matrix(INPUT_A, convert_fractions=False)
+    B = input_matrix(INPUT_B, convert_fractions=False).flatten()
 
-print("\nMa trận A:"); output_matrix(A)
-print("\nKiểm tra chéo trội của A:", check_dominance(A));
-print("\nMa trận B:"); output_matrix(B)
+    print("\nMa trận A:"); output_matrix(A)
+    print("\nKiểm tra chéo trội của A:", check_dominance(A));
+    print("\nMa trận B:"); output_matrix(B)
 
-domiType = check_dominance(A)
+    domiType = check_dominance(A)
 
-if domiType in (2, 3):
-    print("\n=== Trường hợp chéo trội cột ===")
-    T, C, D = convert_to_iteration_2(A, B)
-    print("\nMa trận C:"); output_matrix(C)
-    print("\nMa trận D:"); output_matrix(D)
-    x0 = np.zeros(A.shape[0])
-    df_history = fixed_point_matrix_iteration_2(A, T, C, D, x0, domiType, eps=1e-6, eta=None, max_iter=k)
-    print(df_history)
-    solution_series = df_history.filter(regex=r'^x\d+$').iloc[-1]
-    print("Nghiệm xấp xỉ:"),
-    print(solution_series.to_string())
-
+    if domiType in (2, 3):
+        print("\n=== Trường hợp chéo trội cột ===")
+        T, C, D = convert_to_iteration_2(A, B)
+        print("\nMa trận C:"); output_matrix(C)
+        print("\nMa trận D:"); output_matrix(D)
+        x0 = np.zeros(A.shape[0])
+        df_history = fixed_point_matrix_iteration_2(A, T, C, D, x0, domiType, eps=1e-6, eta=None, max_iter=k)
+        print(df_history)
+        solution_series = df_history.filter(regex=r'^x\d+$').iloc[-1]
+        print("Nghiệm xấp xỉ:"),
+        print(solution_series.to_string())
+print("Đã lưu kết quả vào file:", output_path)
 
 
 

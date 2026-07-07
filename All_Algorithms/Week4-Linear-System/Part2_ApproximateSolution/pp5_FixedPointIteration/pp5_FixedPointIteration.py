@@ -17,6 +17,7 @@ from typing import Tuple, Union
 import numpy as np
 import pandas as pd
 import contextlib
+import warnings
 
 __dir__ = Path(__file__).parent.resolve()
 
@@ -76,7 +77,7 @@ def check_norm (A: np.ndarray):
     print("Chuẩn hàng: ", res := np.max((np.sum(np.abs(A), axis=0) - np.diag(np.abs(A))) / np.diag(np.abs(A))))
     print("Chuẩn 2: ", res := np.linalg.norm(tmp, ord=2))
     print("Chuẩn max: ", res := 3*np.max(tmp))
-def fixed_point_matrix_iteration(A, B, initial_values, q, eps, eta, norm):
+def fixed_point_matrix_iteration(A, B, initial_values, q, eps, eta, norm, max_iter=1000):
     """
     Perform fixed-point iteration for system of linear equations using x_new = Ax + B
     
@@ -102,6 +103,7 @@ def fixed_point_matrix_iteration(A, B, initial_values, q, eps, eta, norm):
     n = len(initial_values)
     values = np.array(initial_values)
     results = [[0] + initial_values.tolist()]
+    iteration = 0
 
     #Calculate the shrinking speed q:
     new_eps = (eps if eps is not None else eta) * (1-q) / q
@@ -120,9 +122,12 @@ def fixed_point_matrix_iteration(A, B, initial_values, q, eps, eta, norm):
         # Append results
         results.append(new_values.tolist() + [total_diff])
         values = new_values
+        iteration += 1
         
         # Check for convergence
         if total_diff < new_eps:
+            break
+        if iteration >= max_iter:
             break
         
     columns = [f'x{j+1}' for j in range(n)] + ['total_diff']
@@ -148,11 +153,15 @@ if __name__ == "__main__":
         norm = 1
 
         # Call the function
-        df_history = fixed_point_matrix_iteration (A, B, initial_guess, q, eps, eta, norm)
-        print(df_history)
-        solution_series = df_history.filter(regex=r'^x\d+$').iloc[-1]
-        print("Nghiệm xấp xỉ:"),
-        print(solution_series.to_string())
+        with np.errstate(all='ignore'):
+            try:
+                df_history = fixed_point_matrix_iteration (A, B, initial_guess, q, eps, eta, norm)
+                print(df_history)
+                solution_series = df_history.filter(regex=r'^x\d+$').iloc[-1]
+                print("Nghiệm xấp xỉ:"),
+                print(solution_series.to_string())
+            except Exception as e:
+                print(f"Lỗi: {e}")
     print(f"Đã ghi kết quả vào {output_path}")
 
 

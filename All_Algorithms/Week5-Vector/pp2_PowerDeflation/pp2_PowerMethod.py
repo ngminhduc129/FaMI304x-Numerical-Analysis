@@ -7,7 +7,7 @@
 #               Case 2: hai trị trội bằng trị tuyệt đối, trái dấu
 #               Case 3: hai trị trội là phức liên hợp
 #
-# Input: Đọc từ PWDF_input_A.txt, PWDF_input_A3.txt
+# Input: Đọc từ input.txt
 # Cách dùng: python pp2_PowerMethod.py
 # =============================================================================
 import contextlib
@@ -17,7 +17,7 @@ from typing import List, Tuple, Union
 import numpy as np
 import pandas as pd
 
-__dir__ = Path(__file__).parent.resolve()
+DIR = Path(__file__).parent.resolve()
 
 pd.set_option('display.precision', 12)
 pd.set_option('display.width', 300)
@@ -31,7 +31,7 @@ def input_matrix(filename, convert_fractions=False):
     """
     matrix = []
 
-    with open(str(__dir__ / filename), 'r') as f:
+    with open(str(DIR / filename), 'r') as f:
         for line in f:
             tokens = line.strip().split()
             if not tokens:
@@ -47,8 +47,7 @@ def input_matrix(filename, convert_fractions=False):
 
             matrix.append(row)
 
-    dtype = float if convert_fractions else object
-    return np.array(matrix, dtype=dtype)
+    return np.array(matrix, dtype=float)
 
 
 def output_matrix(X: np.ndarray, precision: int = 7):
@@ -120,14 +119,8 @@ def power_method(A, x0, tol=1e-6, max_iter=1000, norm_ord=2, precision=7, displa
     cols = ['Lần lặp'] + [f'y{i+1}' for i in range(n)] + ['lambda'] + [f'x{i+1}' for i in range(n)]
     df = pd.DataFrame(history, columns=cols)
     if display:
-        if len(df) > 6:
-            df_show = pd.concat([df.head(3), df.tail(3)])
-            print(df_show.to_string(index=False,
-                                    float_format=lambda x: f"{x:.{precision}f}"))
-            print("    ... (bỏ qua", len(df) - 6, "lần lặp) ...")
-        else:
-            print(df.to_string(index=False,
-                               float_format=lambda x: f"{x:.{precision}f}"))
+        print(df.to_string(index=False,
+                           float_format=lambda x: f"{x:.{precision}f}"))
 
     return eigenvalue, x_new
 
@@ -156,6 +149,8 @@ def power_method_case2(A, x0, tol=1e-6, max_iter=1000, norm_ord=np.inf, precisio
 
     y_even = x0.astype(float)
     A2 = A @ A
+    x1 = np.empty(n)
+    x2 = np.empty(n)
 
     for k in range(1, max_iter + 1):
         if k > 1:
@@ -180,14 +175,8 @@ def power_method_case2(A, x0, tol=1e-6, max_iter=1000, norm_ord=np.inf, precisio
     cols = ['Lần lặp'] + [f'y{i+1}' for i in range(n)] + ['λ²'] + [f'x1_{i+1}' for i in range(n)] + [f'x2_{i+1}' for i in range(n)]
     df = pd.DataFrame(history, columns=cols)
     if display:
-        if len(df) > 6:
-            df_show = pd.concat([df.head(3), df.tail(3)])
-            print(df_show.to_string(index=False,
-                                    float_format=lambda x: f"{x:.{precision}f}"))
-            print("    ... (bỏ qua", len(df) - 6, "lần lặp) ...")
-        else:
-            print(df.to_string(index=False,
-                               float_format=lambda x: f"{x:.{precision}f}"))
+        print(df.to_string(index=False,
+                           float_format=lambda x: f"{x:.{precision}f}"))
 
     lambda1_final = np.sqrt(eigen2)
     return lambda1_final, x1, x2
@@ -256,14 +245,8 @@ def power_method_case3(A, x0, tol=1e-6, max_iter=100, norm_ord=np.inf, precision
     df = pd.DataFrame(history, columns=cols)
 
     if display:
-        if len(df) > 6:
-            df_show = pd.concat([df.head(3), df.tail(3)])
-            print(df_show.to_string(index=False,
-                                    float_format=lambda x: f"{x:.{precision}f}"))
-            print("    ... (bỏ qua", len(df) - 6, "lần lặp) ...")
-        else:
-            print(df.to_string(index=False,
-                               float_format=lambda x: f"{x:.{precision}f}"))
+        print(df.to_string(index=False,
+                           float_format=lambda x: f"{x:.{precision}f}"))
 
     discriminant = p * p - 4.0 * q
     sqrt_disc = np.sqrt(discriminant)
@@ -276,29 +259,30 @@ def power_method_case3(A, x0, tol=1e-6, max_iter=100, norm_ord=np.inf, precision
     v1 = v1 / np.linalg.norm(v1, ord=norm_ord)
     v2 = v2 / np.linalg.norm(v2, ord=norm_ord)
 
-    df_eigs = pd.DataFrame({'v1': v1, 'v2': v2})
-
-    return lambda1, lambda2, df_eigs
+    return lambda1, lambda2, v1, v2
 
 
 # ==== DEMO ====
 if __name__ == "__main__":
-    output_path = str(__dir__ / "PowerMethod_result.txt")
+    output_path = str(DIR / "PowerMethod_result.txt")
     with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
-        A = input_matrix('PWDF_input_A.txt', convert_fractions=False)
-        x0 = np.array([1., 1., 1., 1., 1.])
+        A = input_matrix('input.txt', convert_fractions=False)
+        x0 = np.ones(A.shape[0], dtype=float)
 
-        print("Ma trận A (5x5 - trị riêng thực):")
+        print(f"Ma trận A ({A.shape[0]}x{A.shape[1]}):")
         output_matrix(A, precision=4)
         print()
 
         print("=" * 70)
         print("CASE 1 - Lũy thừa thường (trị riêng trội thực, bội đơn)")
         print("=" * 70)
-        lam1, v1 = power_method(A, x0, precision=7)
-        v1_str = ", ".join(f"{x:.7f}" for x in v1)
-        print(f"\n  λ₁ ≈ {lam1:.7f}")
-        print(f"  v₁ = [{v1_str}]")
+        try:
+            lam1, v1 = power_method(A, x0, precision=7)
+            v1_str = ", ".join(f"{x:.7f}" for x in v1)
+            print(f"\n  λ₁ ≈ {lam1:.7f}")
+            print(f"  v₁ = [{v1_str}]")
+        except Exception as e:
+            print(f"  ❌ {e}")
 
         print()
         print("=" * 70)
@@ -318,19 +302,11 @@ if __name__ == "__main__":
             print(f"  ❌ {e}")
 
         print()
-        A3 = input_matrix('PWDF_input_A3.txt', convert_fractions=False)
-        x0_3 = np.array([-1., 1., 0., 0.])
-        print("Ma trận A3 (4x4 - trị riêng phức liên hợp):")
-        output_matrix(A3, precision=4)
-        print()
-
         print("=" * 70)
         print("CASE 3 - Hai trị trội là phức liên hợp")
         print("=" * 70)
         try:
-            lam3a, lam3b, df3 = power_method_case3(A3, x0_3, precision=7)
-            v3a = df3['v1'].values
-            v3b = df3['v2'].values
+            lam3a, lam3b, v3a, v3b = power_method_case3(A, x0, precision=7)
             v3a_str = ", ".join(f"{x.real:.7f}{x.imag:+.7f}j" for x in v3a)
             v3b_str = ", ".join(f"{x.real:.7f}{x.imag:+.7f}j" for x in v3b)
             print(f"\n  λ₁ ≈ {lam3a:.7f}, λ₂ ≈ {lam3b:.7f}")

@@ -10,7 +10,7 @@
 #   compute_all_eigenpairs(A, x0)           - tìm tất cả trị riêng
 #   run_all_cases(A, x0)                    - chạy cả 3 case
 #
-# Input: Đọc từ PWDF_input_A.txt, PWDF_input_A3.txt
+# Input: Đọc từ input.txt
 # Cách dùng: python pp2_Deflation.py
 # =============================================================================
 import contextlib
@@ -22,7 +22,7 @@ import pandas as pd
 from pp2_PowerMethod import power_method, power_method_case2, power_method_case3, \
     input_matrix, output_matrix, verify_eigenpair
 
-__dir__ = Path(__file__).parent.resolve()
+DIR = Path(__file__).parent.resolve()
 
 pd.set_option('display.precision', 12)
 pd.set_option('display.width', 300)
@@ -50,7 +50,10 @@ def deflate_once(A: np.ndarray, lam: float, v: np.ndarray, x0_left: np.ndarray,
         raise ValueError("Vector riêng trái và phải gần như trực giao; không thể xuống thang.")
     w = w / scale
     # Step 3: rank-1 deflation
-    return A - lam * np.outer(v, w)
+    A_new = A - lam * np.outer(v, w)
+    print(f"\nMa trận sau khi xuống thang (λ = {lam:.{precision}f}):")
+    output_matrix(A_new, precision=precision)
+    return A_new
 
 
 def compute_all_eigenpairs(
@@ -195,12 +198,10 @@ def run_all_cases(A: np.ndarray, x0: np.ndarray,
     print("CASE 3 - Hai trị trội là phức liên hợp (λ₂ = λ̅₁)")
     print("=" * 70)
     try:
-        lam3a, lam3b, df3 = power_method_case3(
+        lam3a, lam3b, v3a, v3b = power_method_case3(
             A, x0.copy().astype(float).flatten(), tol=tol,
             max_iter=max_iter // 2, norm_ord=norm_ord,
             precision=precision, display=False)
-        v3a = df3['v1'].values
-        v3b = df3['v2'].values
         r3a = verify_eigenpair(A, lam3a, v3a)
         r3b = verify_eigenpair(A, lam3b, v3b)
 
@@ -257,18 +258,12 @@ def run_all_cases(A: np.ndarray, x0: np.ndarray,
 
 # ==== DEMO ====
 if __name__ == "__main__":
-    output_path = str(__dir__ / "Deflation_result.txt")
+    output_path = str(DIR / "Deflation_result.txt")
     with open(output_path, "w", encoding="utf-8") as f, contextlib.redirect_stdout(f):
-        A = input_matrix('PWDF_input_A.txt', convert_fractions=False)
-        x0 = np.array([1., 1., 1., 1., 1.])
-        print("\nMa trận A (5x5 - trị riêng thực):")
+        A = input_matrix('input.txt', convert_fractions=False)
+        x0 = np.ones(A.shape[0], dtype=float)
+        print(f"\nMa trận A ({A.shape[0]}x{A.shape[1]}):")
         output_matrix(A, precision=4)
         run_all_cases(A, x0, precision=7)
-
-        A3 = input_matrix('PWDF_input_A3.txt', convert_fractions=False)
-        x0_3 = np.array([-1., 1., 0., 0.])
-        print("\n\nMa trận A3 (4x4 - trị riêng phức liên hợp):")
-        output_matrix(A3, precision=4)
-        run_all_cases(A3, x0_3, precision=7)
 
     print(f"Đã ghi kết quả vào {output_path}")
